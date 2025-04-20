@@ -1,8 +1,7 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { PlusCircle, BookOpen, Layout, ListTodos } from "lucide-react";
+import { PlusCircle, BookOpen, Layout, ListTodo } from "lucide-react";
 
 const AdminDashboard = () => {
   return (
@@ -53,7 +52,7 @@ const AdminDashboard = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <ListTodos className="h-5 w-5" />
+              <ListTodo className="h-5 w-5" />
               Manage Chapters
             </CardTitle>
             <CardDescription>Add and edit manga chapters</CardDescription>
