@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,6 +16,7 @@ import { AdminRoute } from "./components/auth/AdminRoute";
 import AdminDashboard from "./pages/admin/Dashboard";
 import MangaList from "./pages/admin/MangaList";
 import MangaForm from "./pages/admin/MangaForm";
+import GenreList from "./pages/admin/GenreList";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +42,7 @@ const App = () => (
                 <Route path="/admin/manga" element={<MangaList />} />
                 <Route path="/admin/manga/new" element={<MangaForm />} />
                 <Route path="/admin/manga/:id/edit" element={<MangaForm />} />
+                <Route path="/admin/genres" element={<GenreList />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
