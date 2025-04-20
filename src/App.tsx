@@ -15,6 +15,8 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { AdminRoute } from "./components/auth/AdminRoute";
 import AdminDashboard from "./pages/admin/Dashboard";
+import MangaList from "./pages/admin/MangaList";
+import MangaForm from "./pages/admin/MangaForm";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +39,9 @@ const App = () => (
               {/* Admin Routes */}
               <Route element={<AdminRoute />}>
                 <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/manga" element={<MangaList />} />
+                <Route path="/admin/manga/new" element={<MangaForm />} />
+                <Route path="/admin/manga/:id/edit" element={<MangaForm />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
