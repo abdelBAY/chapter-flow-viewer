@@ -1,14 +1,16 @@
 
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, Bookmark, Menu, X } from "lucide-react";
+import { Search, Bookmark, Menu, X, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/hooks/useAuth";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,7 +56,14 @@ const Navbar = () => {
               <Bookmark size={18} className="text-manga-accent" />
               <span>Favorites</span>
             </Link>
-            <Button variant="outline" size="sm">Sign In</Button>
+            {user ? (
+              <Button variant="outline" size="sm" onClick={() => signOut()}>Sign Out</Button>
+            ) : (
+              <Button variant="outline" size="sm" onClick={() => navigate('/auth')}>
+                <User className="mr-2 h-4 w-4" />
+                Sign In
+              </Button>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -89,7 +98,11 @@ const Navbar = () => {
                 <Bookmark size={18} className="mr-2 text-manga-accent" />
                 Favorites
               </Link>
-              <Button variant="outline" className="w-full">Sign In</Button>
+              {user ? (
+                <Button variant="outline" onClick={() => signOut()}>Sign Out</Button>
+              ) : (
+                <Button variant="outline" onClick={() => navigate('/auth')}>Sign In</Button>
+              )}
             </div>
           </div>
         )}
