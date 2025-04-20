@@ -1,0 +1,198 @@
+
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { Manga, SearchFilters } from "@/types/manga";
+import { searchManga } from "@/services/mangaService";
+import MangaGrid from "@/components/manga/MangaGrid";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Select, 
+  SelectContent, 
+  SelectGroup, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { Search as SearchIcon } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const Search = () => {
+  const location = useLocation();
+  
+  const [results, setResults] = useState<Manga[]>([]);
+  const [loading, setLoading] = useState(false);
+  
+  // Form state
+  const [query, setQuery] = useState("");
+  const [status, setStatus] = useState<"all" | "ongoing" | "completed" | "hiatus">("all");
+  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState<"latest" | "oldest" | "alphabetical">("latest");
+  
+  // Available genres (in real app would be fetched)
+  const availableGenres = [
+    "Action", "Adventure", "Comedy", "Drama", "Fantasy", 
+    "Horror", "Mystery", "Romance", "Sci-Fi", "Slice of Life", 
+    "Supernatural", "Thriller", "Historical", "School", "Martial Arts",
+    "Superhero", "Post-Apocalyptic", "Dark Fantasy"
+  ];
+  
+  const toggleGenre = (genre: string) => {
+    if (selectedGenres.includes(genre)) {
+      setSelectedGenres(selectedGenres.filter(g => g !== genre));
+    } else {
+      setSelectedGenres([...selectedGenres, genre]);
+    }
+  };
+  
+  // Parse query params on initial load
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const queryParam = params.get("q");
+    if (queryParam) {
+      setQuery(queryParam);
+    }
+  }, [location.search]);
+  
+  // Perform search when form inputs change
+  useEffect(() => {
+    const performSearch = async () => {
+      setLoading(true);
+      try {
+        const filters: SearchFilters = {
+          query: query,
+          status: status,
+          genres: selectedGenres.length > 0 ? selectedGenres : undefined,
+          sortBy: sortBy
+        };
+        
+        const searchResults = await searchManga(filters);
+        setResults(searchResults);
+      } catch (error) {
+        console.error("Search failed:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    performSearch();
+  }, [query, status, selectedGenres, sortBy]);
+  
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Search is already triggered by useEffect
+  };
+  
+  return (
+    <div className="space-y-8">
+      <h1 className="text-3xl font-bold mb-6">Search Manga</h1>
+      
+      <form onSubmit={handleSearch} className="space-y-6">
+        <div className="flex gap-3">
+          <div className="grow">
+            <Input
+              type="search"
+              placeholder="Search by title or description..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="bg-secondary/30 border-white/10"
+            />
+          </div>
+          <Button type="submit" className="gap-2">
+            <SearchIcon size={18} />
+            Search
+          </Button>
+        </div>
+        
+        <div className="flex flex-wrap md:flex-nowrap gap-4">
+          {/* Status filter */}
+          <div className="w-full md:w-1/3">
+            <label className="block text-sm font-medium mb-2">Status</label>
+            <Select 
+              value={status} 
+              onValueChange={(value) => setStatus(value as any)}
+            >
+              <SelectTrigger className="bg-secondary/30 border-white/10">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="ongoing">Ongoing</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="hiatus">On Hiatus</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {/* Sort filter */}
+          <div className="w-full md:w-1/3">
+            <label className="block text-sm font-medium mb-2">Sort By</label>
+            <Select 
+              value={sortBy} 
+              onValueChange={(value) => setSortBy(value as any)}
+            >
+              <SelectTrigger className="bg-secondary/30 border-white/10">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="latest">Latest</SelectItem>
+                  <SelectItem value="oldest">Oldest</SelectItem>
+                  <SelectItem value="alphabetical">Alphabetical</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        
+        {/* Genres */}
+        <div>
+          <label className="block text-sm font-medium mb-2">Genres</label>
+          <div className="flex flex-wrap gap-2">
+            {availableGenres.map((genre) => (
+              <Badge
+                key={genre}
+                variant={selectedGenres.includes(genre) ? "default" : "outline"}
+                className="cursor-pointer"
+                onClick={() => toggleGenre(genre)}
+              >
+                {genre}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      </form>
+      
+      <div className="pt-4">
+        {loading ? (
+          <div className="space-y-6">
+            <Skeleton className="h-8 w-48" />
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+              {Array(10).fill(0).map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="h-60 w-full" />
+                  <Skeleton className="h-5 w-full" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <>
+            <h2 className="text-xl font-semibold mb-4">
+              {results.length === 0 
+                ? "No results found" 
+                : `Found ${results.length} manga${results.length === 1 ? "" : "s"}`}
+            </h2>
+            {results.length > 0 && <MangaGrid mangas={results} />}
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Search;
