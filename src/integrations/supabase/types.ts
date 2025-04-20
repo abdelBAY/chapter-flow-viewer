@@ -9,6 +9,163 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      cms_chapters: {
+        Row: {
+          created_at: string
+          id: string
+          manga_id: string | null
+          number: number
+          pages: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          manga_id?: string | null
+          number: number
+          pages?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          manga_id?: string | null
+          number?: number
+          pages?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_chapters_manga_id_fkey"
+            columns: ["manga_id"]
+            isOneToOne: false
+            referencedRelation: "cms_mangas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_genres: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cms_manga_genres: {
+        Row: {
+          genre_id: string
+          manga_id: string
+        }
+        Insert: {
+          genre_id: string
+          manga_id: string
+        }
+        Update: {
+          genre_id?: string
+          manga_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_manga_genres_genre_id_fkey"
+            columns: ["genre_id"]
+            isOneToOne: false
+            referencedRelation: "cms_genres"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cms_manga_genres_manga_id_fkey"
+            columns: ["manga_id"]
+            isOneToOne: false
+            referencedRelation: "cms_mangas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_mangas: {
+        Row: {
+          artist: string
+          author: string
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          status: Database["public"]["Enums"]["manga_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist: string
+          author: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          status?: Database["public"]["Enums"]["manga_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist?: string
+          author?: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          status?: Database["public"]["Enums"]["manga_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cms_pages: {
+        Row: {
+          chapter_id: string | null
+          created_at: string
+          id: string
+          image_url: string
+          page_number: number
+        }
+        Insert: {
+          chapter_id?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          page_number: number
+        }
+        Update: {
+          chapter_id?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          page_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_pages_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "cms_chapters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -33,15 +190,34 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Insert: {
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Update: {
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      manga_status: "ongoing" | "completed" | "hiatus"
+      user_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -156,6 +332,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      manga_status: ["ongoing", "completed", "hiatus"],
+      user_role: ["admin", "user"],
+    },
   },
 } as const

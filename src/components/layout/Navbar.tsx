@@ -1,16 +1,17 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, Bookmark, Menu, X, User } from "lucide-react";
+import { Search, Bookmark, Menu, X, User, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdmin } from "@/hooks/useAdmin";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { isAdmin } = useAdmin();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +57,12 @@ const Navbar = () => {
               <Bookmark size={18} className="text-manga-accent" />
               <span>Favorites</span>
             </Link>
+            {isAdmin && (
+              <Link to="/admin" className="flex items-center space-x-1 text-sm">
+                <Shield size={18} className="text-manga-accent" />
+                <span>Admin</span>
+              </Link>
+            )}
             {user ? (
               <Button variant="outline" size="sm" onClick={() => signOut()}>Sign Out</Button>
             ) : (
@@ -98,6 +105,16 @@ const Navbar = () => {
                 <Bookmark size={18} className="mr-2 text-manga-accent" />
                 Favorites
               </Link>
+              {isAdmin && (
+                <Link 
+                  to="/admin"
+                  className="flex items-center py-2 px-3 rounded-md hover:bg-secondary/50"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Shield size={18} className="mr-2 text-manga-accent" />
+                  Admin
+                </Link>
+              )}
               {user ? (
                 <Button variant="outline" onClick={() => signOut()}>Sign Out</Button>
               ) : (

@@ -13,6 +13,8 @@ import Search from "./pages/Search";
 import Favorites from "./pages/Favorites";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import { AdminRoute } from "./components/auth/AdminRoute";
+import AdminDashboard from "./pages/admin/Dashboard";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +33,12 @@ const App = () => (
               <Route path="/search" element={<Search />} />
               <Route path="/favorites" element={<Favorites />} />
               <Route path="/auth" element={<Auth />} />
+              
+              {/* Admin Routes */}
+              <Route element={<AdminRoute />}>
+                <Route path="/admin" element={<AdminDashboard />} />
+              </Route>
+
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
