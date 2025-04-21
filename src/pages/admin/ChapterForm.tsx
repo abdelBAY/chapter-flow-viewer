@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
+import { Loader2 } from "lucide-react";
 
 type ChapterFormData = {
   manga_id: string;
@@ -175,7 +176,12 @@ export default function ChapterForm() {
                 <p className="text-sm text-destructive mt-1">Enter page count</p>
               )}
             </div>
-            <Button type="submit" loading={mutation.isPending} className="w-full">
+            <Button 
+              type="submit" 
+              disabled={mutation.isPending}
+              className="w-full"
+            >
+              {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {isEditing ? "Update Chapter" : "Create Chapter"}
             </Button>
           </form>
