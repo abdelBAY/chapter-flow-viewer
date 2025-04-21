@@ -1,10 +1,10 @@
-
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UseFormReturn } from "react-hook-form";
 import { MangaFormData } from "@/hooks/useMangaForm";
+import { CoverImageUploader } from "./CoverImageUploader";
+import { Input } from "@/components/ui/input";
 
 interface DetailsFieldsProps {
   form: UseFormReturn<MangaFormData>;
@@ -62,10 +62,17 @@ export const DetailsFields = ({ form }: DetailsFieldsProps) => {
         name="cover_url"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Cover URL</FormLabel>
-            <FormControl>
-              <Input {...field} placeholder="Enter cover image URL" />
-            </FormControl>
+            <FormLabel>Cover Image</FormLabel>
+            <CoverImageUploader
+              value={field.value}
+              onChange={field.onChange}
+            />
+            <div className="mt-2">
+              <FormLabel className="text-xs font-normal">Or paste image URL</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="Enter cover image URL directly" />
+              </FormControl>
+            </div>
             <FormMessage />
           </FormItem>
         )}
