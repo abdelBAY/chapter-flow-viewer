@@ -17,6 +17,7 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import MangaList from "./pages/admin/MangaList";
 import MangaForm from "./pages/admin/MangaForm";
 import GenreList from "./pages/admin/GenreList";
+import ChapterList from "./pages/admin/ChapterList";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,8 @@ const App = () => (
                 <Route path="/admin/manga/new" element={<MangaForm />} />
                 <Route path="/admin/manga/:id/edit" element={<MangaForm />} />
                 <Route path="/admin/genres" element={<GenreList />} />
+                <Route path="/admin/chapters" element={<ChapterList />} />
+                {/* Placeholder for edit/add chapter forms */}
               </Route>
 
               <Route path="*" element={<NotFound />} />
