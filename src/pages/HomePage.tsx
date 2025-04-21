@@ -1,9 +1,22 @@
 
 import { useEffect, useState } from "react";
 import { Manga } from "@/types/manga";
-import { getMangaList } from "@/services/mangaService";
 import MangaGrid from "@/components/manga/MangaGrid";
 import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client";
+
+const mapSupabaseManga = (row: any): Manga => ({
+  id: row.id,
+  title: row.title,
+  cover: row.cover_url,
+  description: row.description || "",
+  author: row.author,
+  artist: row.artist,
+  status: row.status,
+  genres: [], // Genres are not fetched here
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
 
 const HomePage = () => {
   const [latestMangas, setLatestMangas] = useState<Manga[]>([]);
@@ -11,28 +24,28 @@ const HomePage = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const mangas = await getMangaList();
-        
-        // Sort by updated date for latest
-        const latest = [...mangas].sort(
-          (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-        );
-        
-        // For demo, just shuffle the array for "popular"
-        const popular = [...mangas].sort(() => Math.random() - 0.5);
-        
-        setLatestMangas(latest);
-        setPopularMangas(popular);
-      } catch (error) {
-        console.error("Failed to fetch manga:", error);
-      } finally {
+    const fetchMangas = async () => {
+      setIsLoading(true);
+      // Fetch from Supabase
+      const { data, error } = await supabase
+        .from("cms_mangas")
+        .select("*")
+        .order("updated_at", { ascending: false });
+      if (error) {
         setIsLoading(false);
+        return;
       }
+      const mangas: Manga[] = (data || []).map(mapSupabaseManga);
+
+      // "Latest Updates" is already sorted by updatedAt descending by our query
+      setLatestMangas(mangas);
+
+      // "Popular Series": just shuffle for now
+      const shuffled = [...mangas].sort(() => Math.random() - 0.5);
+      setPopularMangas(shuffled);
+      setIsLoading(false);
     };
-    
-    fetchData();
+    fetchMangas();
   }, []);
 
   return (
