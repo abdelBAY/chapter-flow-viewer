@@ -20,11 +20,13 @@ interface EditGenreDialogProps {
 }
 
 export const EditGenreDialog = ({ genre, open, onOpenChange }: EditGenreDialogProps) => {
-  const [name, setName] = useState(genre.name);
+  const [name, setName] = useState("");
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    setName(genre.name);
+    if (genre) {
+      setName(genre.name);
+    }
   }, [genre]);
 
   const updateGenre = useMutation({
@@ -55,7 +57,7 @@ export const EditGenreDialog = ({ genre, open, onOpenChange }: EditGenreDialogPr
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim()) {
+    if (name.trim() && genre.id) {
       updateGenre.mutate({ id: genre.id, name: name.trim() });
     }
   };
@@ -84,8 +86,8 @@ export const EditGenreDialog = ({ genre, open, onOpenChange }: EditGenreDialogPr
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={!name.trim() || name === genre.name}>
-              Update
+            <Button type="submit" disabled={!name.trim()}>
+              Save Changes
             </Button>
           </div>
         </form>
