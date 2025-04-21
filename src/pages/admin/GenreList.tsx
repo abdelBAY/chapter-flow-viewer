@@ -1,3 +1,2 @@
 
-import { GenreList } from "./genres/GenreList";
-export default GenreList;
+export { default } from "./genres/GenreList";
