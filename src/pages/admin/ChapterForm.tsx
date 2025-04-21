@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
@@ -11,12 +10,14 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
+import ChapterPagesUploader from "@/components/admin/ChapterPagesUploader";
 
 type ChapterFormData = {
   manga_id: string;
   number: number;
   title: string;
   pages: number;
+  page_images: string[];
 };
 
 export default function ChapterForm() {
@@ -25,7 +26,6 @@ export default function ChapterForm() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  // Fetch mangas for the select
   const { data: mangas = [], isLoading: loadingMangas } = useQuery({
     queryKey: ["admin-mangas"],
     queryFn: async () => {
@@ -35,7 +35,6 @@ export default function ChapterForm() {
     }
   });
 
-  // Fetch chapter if editing
   const { data: chapter, isLoading: loadingChapter } = useQuery({
     queryKey: ["chapter", id],
     queryFn: async () => {
@@ -57,6 +56,7 @@ export default function ChapterForm() {
       number: 1,
       title: "",
       pages: 1,
+      page_images: [],
     },
   });
 
@@ -66,13 +66,16 @@ export default function ChapterForm() {
         manga_id: chapter.manga_id,
         number: chapter.number,
         title: chapter.title,
-        pages: chapter.pages
+        pages: chapter.pages,
+        page_images: [],
       });
     }
   }, [chapter, form]);
 
   const mutation = useMutation({
     mutationFn: async (values: ChapterFormData) => {
+      let chapterIdToUse = id;
+
       if (isEditing) {
         const { error } = await supabase
           .from("cms_chapters")
@@ -80,22 +83,38 @@ export default function ChapterForm() {
             manga_id: values.manga_id,
             number: values.number,
             title: values.title,
-            pages: values.pages,
+            pages: values.page_images.length,
           })
           .eq("id", id);
         if (error) throw error;
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from("cms_chapters")
           .insert([
             {
               manga_id: values.manga_id,
               number: values.number,
               title: values.title,
-              pages: values.pages,
+              pages: values.page_images.length,
             }
-          ]);
+          ])
+          .select("id")
+          .maybeSingle();
         if (error) throw error;
+        chapterIdToUse = data?.id;
+      }
+
+      if (values.page_images.length > 0 && chapterIdToUse) {
+        if (isEditing) {
+          await supabase.from("cms_pages").delete().eq("chapter_id", chapterIdToUse);
+        }
+        for (let i = 0; i < values.page_images.length; i++) {
+          await supabase.from("cms_pages").insert({
+            chapter_id: chapterIdToUse,
+            page_number: i + 1,
+            image_url: values.page_images[i],
+          });
+        }
       }
     },
     onSuccess: () => {
@@ -121,14 +140,17 @@ export default function ChapterForm() {
       <Card>
         <CardContent className="py-8">
           <h1 className="text-2xl font-bold mb-6">{isEditing ? "Edit Chapter" : "Create Chapter"}</h1>
-          <form className="space-y-5" onSubmit={form.handleSubmit((data) => mutation.mutate(data))}>
+          <form className="space-y-5" onSubmit={form.handleSubmit((data) => {
+            data.pages = data.page_images.length;
+            mutation.mutate(data);
+          })}>
             <div>
               <Label htmlFor="manga">Manga Series</Label>
               <select
                 id="manga"
                 {...form.register("manga_id", { required: true })}
                 className="block mt-1 w-full rounded-md border border-input px-3 py-2 bg-background text-base"
-                disabled={isEditing} // Don't allow changing manga for edit
+                disabled={isEditing}
               >
                 <option value="">Select manga</option>
                 {mangas.map((manga: any) => (
@@ -163,6 +185,10 @@ export default function ChapterForm() {
                 <p className="text-sm text-destructive mt-1">Title is required</p>
               )}
             </div>
+            <ChapterPagesUploader
+              value={form.watch("page_images")}
+              onChange={(urls) => form.setValue("page_images", urls)}
+            />
             <div>
               <Label htmlFor="pages">Number of Pages</Label>
               <Input
@@ -170,7 +196,9 @@ export default function ChapterForm() {
                 type="number"
                 min={1}
                 step={1}
-                {...form.register("pages", { required: true, valueAsNumber: true })}
+                value={form.watch("page_images").length}
+                readOnly
+                {...form.register("pages")}
               />
               {form.formState.errors.pages && (
                 <p className="text-sm text-destructive mt-1">Enter page count</p>
