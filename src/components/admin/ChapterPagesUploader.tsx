@@ -55,7 +55,7 @@ export default function ChapterPagesUploader({ value, onChange }: ChapterPagesUp
         const fileExt = entry.name.split(".").pop();
         const fileName = `page-${i + 1}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.${fileExt||"png"}`;
 
-        const { error } = await supabase.storage
+        const { data, error } = await supabase.storage
           .from("chapter-pages")
           .upload(fileName, blob, {
             cacheControl: "3600",
@@ -78,12 +78,20 @@ export default function ChapterPagesUploader({ value, onChange }: ChapterPagesUp
       // Add ZIP-uploaded images as new pages at the end
       const newValue = [...value, ...uploadedUrls];
       onChange(newValue);
+      
+      if (uploadedUrls.length > 0) {
+        toast({
+          title: "Upload successful",
+          description: `Uploaded ${uploadedUrls.length} pages from ZIP file.`
+        });
+      }
     } catch (err) {
       toast({
         variant: "destructive",
         title: "ZIP Upload failed",
-        description: (err as Error).message || "Failed to extract ZIP.",
+        description: (err as Error).message || "Failed to extract ZIP."
       });
+      console.error("ZIP upload error:", err);
     } finally {
       setLoading(false);
     }
@@ -96,7 +104,7 @@ export default function ChapterPagesUploader({ value, onChange }: ChapterPagesUp
     // If the first file is ZIP and only one file: special handling
     if (
       files.length === 1 &&
-      files[0].type === "application/zip" || /\bzip$/i.test(files[0].name)
+      (files[0].type === "application/zip" || /\.zip$/i.test(files[0].name))
     ) {
       await handleZipUpload(files[0]);
       return;
@@ -108,9 +116,9 @@ export default function ChapterPagesUploader({ value, onChange }: ChapterPagesUp
       for (let i = 0; i < files.length; i++) {
         const file = (files instanceof FileList ? files[i] : files[i]);
         const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt||"png"}`;
+        const fileName = `page-${value.length + i + 1}-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt||"png"}`;
 
-        const { error } = await supabase.storage
+        const { data, error } = await supabase.storage
           .from("chapter-pages")
           .upload(fileName, file, {
             cacheControl: "3600",
@@ -123,14 +131,30 @@ export default function ChapterPagesUploader({ value, onChange }: ChapterPagesUp
             title: "Upload failed",
             description: error.message
           });
+          console.error("File upload error:", error);
           continue;
         }
 
         const url = supabase.storage.from("chapter-pages").getPublicUrl(fileName).data.publicUrl;
         uploadedUrls.push(url);
       }
+      
       const newValue = [...value, ...uploadedUrls];
       onChange(newValue);
+      
+      if (uploadedUrls.length > 0) {
+        toast({
+          title: "Upload successful", 
+          description: `Uploaded ${uploadedUrls.length} images.`
+        });
+      }
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Upload failed",
+        description: (err as Error).message || "An unknown error occurred"
+      });
+      console.error("Upload error:", err);
     } finally {
       setLoading(false);
     }
@@ -195,6 +219,7 @@ export default function ChapterPagesUploader({ value, onChange }: ChapterPagesUp
         title: "Paste failed",
         description: "Could not paste image. Clipboard permissions may be needed.",
       });
+      console.error("Paste error:", err);
     } finally {
       setLoading(false);
     }

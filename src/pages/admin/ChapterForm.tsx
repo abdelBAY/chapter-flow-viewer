@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
@@ -39,13 +40,32 @@ export default function ChapterForm() {
     queryKey: ["chapter", id],
     queryFn: async () => {
       if (!id) return null;
-      const { data, error } = await supabase
+      const { data: chapterData, error: chapterError } = await supabase
         .from("cms_chapters")
         .select("*")
         .eq("id", id)
         .maybeSingle();
-      if (error) throw error;
-      return data;
+      
+      if (chapterError) throw chapterError;
+      
+      // If we have a chapter, fetch its pages
+      if (chapterData) {
+        const { data: pagesData, error: pagesError } = await supabase
+          .from("cms_pages")
+          .select("*")
+          .eq("chapter_id", id)
+          .order("page_number");
+        
+        if (pagesError) throw pagesError;
+        
+        // Add the page_images to the chapter data
+        return {
+          ...chapterData,
+          page_images: pagesData?.map(page => page.image_url) || []
+        };
+      }
+      
+      return chapterData;
     },
     enabled: isEditing,
   });
@@ -67,7 +87,7 @@ export default function ChapterForm() {
         number: chapter.number,
         title: chapter.title,
         pages: chapter.pages,
-        page_images: [],
+        page_images: chapter.page_images || [],
       });
     }
   }, [chapter, form]);
@@ -106,19 +126,34 @@ export default function ChapterForm() {
 
       if (values.page_images.length > 0 && chapterIdToUse) {
         if (isEditing) {
-          await supabase.from("cms_pages").delete().eq("chapter_id", chapterIdToUse);
+          const { error } = await supabase
+            .from("cms_pages")
+            .delete()
+            .eq("chapter_id", chapterIdToUse);
+          
+          if (error) throw error;
         }
-        for (let i = 0; i < values.page_images.length; i++) {
-          await supabase.from("cms_pages").insert({
-            chapter_id: chapterIdToUse,
-            page_number: i + 1,
-            image_url: values.page_images[i],
-          });
-        }
+
+        const pageInsertions = values.page_images.map((url, index) => ({
+          chapter_id: chapterIdToUse,
+          page_number: index + 1,
+          image_url: url,
+        }));
+
+        const { error } = await supabase
+          .from("cms_pages")
+          .insert(pageInsertions);
+        
+        if (error) throw error;
       }
     },
     onSuccess: () => {
-      toast({ title: isEditing ? "Chapter updated" : "Chapter created" });
+      toast({ 
+        title: isEditing ? "Chapter updated" : "Chapter created",
+        description: isEditing 
+          ? "Your chapter has been successfully updated." 
+          : "Your new chapter has been created successfully."
+      });
       queryClient.invalidateQueries({ queryKey: ["admin-chapters"] });
       navigate("/admin/chapters");
     },
@@ -128,11 +163,14 @@ export default function ChapterForm() {
         title: "Error",
         description: error.message,
       });
+      console.error("Form submission error:", error);
     }
   });
 
   if (loadingMangas || (isEditing && loadingChapter)) {
-    return <div className="container mx-auto py-8">Loading...</div>;
+    return <div className="container mx-auto py-8 flex items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin mr-2" /> Loading...
+    </div>;
   }
 
   return (
@@ -198,6 +236,7 @@ export default function ChapterForm() {
                 step={1}
                 value={form.watch("page_images").length}
                 readOnly
+                className="bg-muted"
                 {...form.register("pages")}
               />
               {form.formState.errors.pages && (
