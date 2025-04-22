@@ -9,9 +9,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import ChapterPagesUploader from "@/components/admin/ChapterPagesUploader";
+
+// Define the type for the chapter data that comes from the database
+type ChapterFromDB = {
+  id: string;
+  manga_id: string;
+  number: number;
+  title: string;
+  pages: number;
+  created_at: string;
+  updated_at: string;
+};
+
+// Extended type that includes page_images
+type ChapterWithPages = ChapterFromDB & {
+  page_images: string[];
+};
 
 type ChapterFormData = {
   manga_id: string;
@@ -59,10 +74,12 @@ export default function ChapterForm() {
         if (pagesError) throw pagesError;
         
         // Add the page_images to the chapter data
-        return {
+        const chapterWithPages: ChapterWithPages = {
           ...chapterData,
           page_images: pagesData?.map(page => page.image_url) || []
         };
+        
+        return chapterWithPages;
       }
       
       return chapterData;
@@ -87,7 +104,8 @@ export default function ChapterForm() {
         number: chapter.number,
         title: chapter.title,
         pages: chapter.pages,
-        page_images: chapter.page_images || [],
+        // Safely access page_images with a fallback to empty array
+        page_images: (chapter as ChapterWithPages).page_images || [],
       });
     }
   }, [chapter, form]);
