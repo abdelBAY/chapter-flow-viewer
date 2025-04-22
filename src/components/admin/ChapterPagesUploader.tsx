@@ -5,10 +5,17 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, FileImage, ClipboardPaste } from "lucide-react";
+import JSZip from "jszip";
 
 interface ChapterPagesUploaderProps {
   value: string[];
   onChange: (urls: string[]) => void;
+}
+
+// Utility: Extract numbers from filenames for sorting (natural order)
+function extractNumber(filename: string) {
+  const match = filename.match(/\d+/);
+  return match ? Number(match[0]) : 0;
 }
 
 export default function ChapterPagesUploader({ value, onChange }: ChapterPagesUploaderProps) {
@@ -16,21 +23,94 @@ export default function ChapterPagesUploader({ value, onChange }: ChapterPagesUp
   const [dragActive, setDragActive] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // --- ZIP support START ---
+
+  // Helper to process a zip file and extract all image files in order
+  const handleZipUpload = async (file: File) => {
+    setLoading(true);
+    try {
+      const zip = await JSZip.loadAsync(file);
+      // Get only image entries (png, jpg, jpeg, webp, etc)
+      const imageEntries = Object.values(zip.files)
+        .filter(e =>
+          !e.dir && /\.(png|jpe?g|webp|bmp|gif)$/i.test(e.name)
+        )
+        .sort((a, b) => extractNumber(a.name) - extractNumber(b.name)); // Sort by filename numbers
+
+      if (imageEntries.length === 0) {
+        toast({
+          variant: "destructive",
+          title: "No images found in ZIP",
+          description: "The ZIP does not contain any image files.",
+        });
+        setLoading(false);
+        return;
+      }
+
+      const uploadedUrls: string[] = [];
+      for (let i = 0; i < imageEntries.length; i++) {
+        const entry = imageEntries[i];
+        const blob = await entry.async("blob");
+        // Use a consistent file name for ordering: page-N.ext
+        const fileExt = entry.name.split(".").pop();
+        const fileName = `page-${i + 1}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.${fileExt||"png"}`;
+
+        const { error } = await supabase.storage
+          .from("chapter-pages")
+          .upload(fileName, blob, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: "Upload failed",
+            description: error.message
+          });
+          continue;
+        }
+
+        const url = supabase.storage.from("chapter-pages").getPublicUrl(fileName).data.publicUrl;
+        uploadedUrls.push(url);
+      }
+
+      // Add ZIP-uploaded images as new pages at the end
+      const newValue = [...value, ...uploadedUrls];
+      onChange(newValue);
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "ZIP Upload failed",
+        description: (err as Error).message || "Failed to extract ZIP.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  // --- ZIP support END ---
+
   // Image uploading logic (reusable for all methods)
   const uploadFiles = async (files: FileList | File[]) => {
     if (!files || files.length === 0) return;
+    // If the first file is ZIP and only one file: special handling
+    if (
+      files.length === 1 &&
+      files[0].type === "application/zip" || /\bzip$/i.test(files[0].name)
+    ) {
+      await handleZipUpload(files[0]);
+      return;
+    }
 
     setLoading(true);
-
     try {
       const uploadedUrls: string[] = [];
-
       for (let i = 0; i < files.length; i++) {
         const file = (files instanceof FileList ? files[i] : files[i]);
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt||"png"}`;
 
-        const { data, error } = await supabase.storage
+        const { error } = await supabase.storage
           .from("chapter-pages")
           .upload(fileName, file, {
             cacheControl: "3600",
@@ -49,8 +129,6 @@ export default function ChapterPagesUploader({ value, onChange }: ChapterPagesUp
         const url = supabase.storage.from("chapter-pages").getPublicUrl(fileName).data.publicUrl;
         uploadedUrls.push(url);
       }
-
-      // Add new uploaded images to existing
       const newValue = [...value, ...uploadedUrls];
       onChange(newValue);
     } finally {
@@ -61,7 +139,8 @@ export default function ChapterPagesUploader({ value, onChange }: ChapterPagesUp
   // File input change
   const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    uploadFiles(files!);
+    if (!files || files.length === 0) return;
+    uploadFiles(files);
   };
 
   // Drag and drop handlers
@@ -97,7 +176,6 @@ export default function ChapterPagesUploader({ value, onChange }: ChapterPagesUp
         for (const type of item.types) {
           if (type.startsWith("image/")) {
             const blob = await item.getType(type);
-            // Provide a default filename and type
             files.push(new File([blob], `pasted-${Date.now()}.png`, { type }));
           }
         }
@@ -140,7 +218,7 @@ export default function ChapterPagesUploader({ value, onChange }: ChapterPagesUp
       >
         <Input
           type="file"
-          accept="image/*"
+          accept="image/*,.zip"
           multiple
           disabled={loading}
           className="hidden"
@@ -152,10 +230,10 @@ export default function ChapterPagesUploader({ value, onChange }: ChapterPagesUp
           disabled={loading}
           onClick={() => inputRef.current?.click()}
         >
-          <FileImage className="mr-2" /> Select images
+          <FileImage className="mr-2" /> Select images or ZIP
         </Button>
         <span className="text-xs text-muted-foreground mt-3">
-          or drag &amp; drop images here
+          Drag &amp; drop images or a ZIP (.zip) here
         </span>
         <Button
           type="button"
@@ -200,6 +278,9 @@ export default function ChapterPagesUploader({ value, onChange }: ChapterPagesUp
             </div>
           </div>
         ))}
+      </div>
+      <div className="text-xs text-muted-foreground mt-2">
+        You can upload multiple images or ZIP files. If you upload a ZIP, images will be extracted and numbered as pages.
       </div>
     </div>
   );
