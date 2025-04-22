@@ -1,10 +1,10 @@
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, FileImage } from "lucide-react";
+import { Loader2, FileImage, ClipboardPaste } from "lucide-react";
 
 interface ChapterPagesUploaderProps {
   value: string[];
@@ -13,9 +13,11 @@ interface ChapterPagesUploaderProps {
 
 export default function ChapterPagesUploader({ value, onChange }: ChapterPagesUploaderProps) {
   const [loading, setLoading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleFilesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
+  // Image uploading logic (reusable for all methods)
+  const uploadFiles = async (files: FileList | File[]) => {
     if (!files || files.length === 0) return;
 
     setLoading(true);
@@ -24,9 +26,9 @@ export default function ChapterPagesUploader({ value, onChange }: ChapterPagesUp
       const uploadedUrls: string[] = [];
 
       for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+        const file = (files instanceof FileList ? files[i] : files[i]);
         const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt||"png"}`;
 
         const { data, error } = await supabase.storage
           .from("chapter-pages")
@@ -56,6 +58,70 @@ export default function ChapterPagesUploader({ value, onChange }: ChapterPagesUp
     }
   };
 
+  // File input change
+  const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    uploadFiles(files!);
+  };
+
+  // Drag and drop handlers
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      uploadFiles(e.dataTransfer.files);
+    }
+  };
+
+  // Clipboard paste handler
+  const handlePaste = async () => {
+    setLoading(true);
+    try {
+      // Clipboard API for images (must be triggered by user gesture)
+      const clipboardItems = await navigator.clipboard.read();
+      const files: File[] = [];
+      for (const item of clipboardItems) {
+        for (const type of item.types) {
+          if (type.startsWith("image/")) {
+            const blob = await item.getType(type);
+            // Provide a default filename and type
+            files.push(new File([blob], `pasted-${Date.now()}.png`, { type }));
+          }
+        }
+      }
+      if (files.length === 0) {
+        toast({
+          variant: "destructive",
+          title: "No image found",
+          description: "Clipboard does not contain an image.",
+        });
+        return;
+      }
+      await uploadFiles(files);
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Paste failed",
+        description: "Could not paste image. Clipboard permissions may be needed.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Remove an image
   const handleRemove = (url: string) => {
     onChange(value.filter((u) => u !== url));
@@ -64,13 +130,49 @@ export default function ChapterPagesUploader({ value, onChange }: ChapterPagesUp
   return (
     <div>
       <label className="block font-medium mb-2">Upload Chapter Pages</label>
-      <Input
-        type="file"
-        accept="image/*"
-        multiple
-        disabled={loading}
-        onChange={handleFilesChange}
-      />
+      <div
+        className={`transition-all border-2 border-dashed rounded-md flex flex-col items-center justify-center p-4 relative bg-background group
+          ${dragActive ? "border-blue-500 bg-blue-50" : "border-muted"}`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        tabIndex={-1}
+      >
+        <Input
+          type="file"
+          accept="image/*"
+          multiple
+          disabled={loading}
+          className="hidden"
+          ref={inputRef}
+          onChange={handleFilesChange}
+        />
+        <Button
+          type="button"
+          disabled={loading}
+          onClick={() => inputRef.current?.click()}
+        >
+          <FileImage className="mr-2" /> Select images
+        </Button>
+        <span className="text-xs text-muted-foreground mt-3">
+          or drag &amp; drop images here
+        </span>
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          className="mt-2"
+          disabled={loading}
+          onClick={handlePaste}
+        >
+          <ClipboardPaste className="mr-2" /> Paste from clipboard
+        </Button>
+        {loading && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 z-10">
+            <Loader2 className="animate-spin mb-2" />Uploading images...
+          </div>
+        )}
+      </div>
       <div className="flex flex-wrap gap-3 mt-3">
         {value.length === 0 && (
           <span className="text-muted-foreground text-sm flex items-center gap-2">
@@ -99,11 +201,6 @@ export default function ChapterPagesUploader({ value, onChange }: ChapterPagesUp
           </div>
         ))}
       </div>
-      {loading && (
-        <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-          <Loader2 className="animate-spin" /> Uploading images...
-        </div>
-      )}
     </div>
   );
 }
