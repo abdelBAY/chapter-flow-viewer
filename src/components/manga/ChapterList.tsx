@@ -15,31 +15,31 @@ const ChapterList = ({ chapters, mangaId, className }: ChapterListProps) => {
   return (
     <div className={className}>
       <h3 className="text-xl font-semibold mb-4">Chapters</h3>
-      <div className="space-y-2">
+      <div className="space-y-3">
         {chapters.length === 0 ? (
           <p className="text-muted-foreground">No chapters available.</p>
         ) : (
           chapters.map((chapter) => (
             <Card 
               key={chapter.id} 
-              className="bg-secondary/20 hover:bg-secondary/30 transition-colors flex items-center border-0"
+              className="bg-secondary/30 hover:bg-secondary/40 transition-colors flex items-center"
             >
-              <div className="bg-white/90 text-black min-w-[3rem] h-full flex items-center justify-center py-4 rounded-l-lg font-bold text-lg">
+              <div className="bg-white text-black rounded-l-lg px-4 py-2 mr-4 font-bold text-lg">
                 {chapter.number}
               </div>
               <CardContent className="p-4 flex-1 flex justify-between items-center">
                 <div>
-                  <h4 className="font-medium text-sm">
+                  <h4 className="font-medium">
                     {chapter.title !== `Chapter ${chapter.number}` && chapter.title}
                   </h4>
-                  <p className="text-xs text-muted-foreground flex items-center gap-2">
+                  <p className="text-xs text-muted-foreground">
                     {formatDistanceToNow(new Date(chapter.createdAt), { addSuffix: true })}
-                    <span className="inline-block w-1 h-1 bg-muted-foreground rounded-full" />
+                    {" · "}
                     {chapter.pages} pages
                   </p>
                 </div>
                 <Button 
-                  variant="ghost" 
+                  variant="outline" 
                   size="sm" 
                   asChild
                   className="hover:bg-manga-accent hover:text-white"
