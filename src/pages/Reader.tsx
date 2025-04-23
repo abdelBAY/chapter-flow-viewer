@@ -1,11 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
   ArrowLeft, 
-  ArrowRight, 
   List,
   ChevronRight, 
   ChevronLeft
@@ -28,8 +26,6 @@ import {
 const Reader = () => {
   const { id: mangaId, chapterId } = useParams<{ id: string; chapterId: string }>();
   const navigate = useNavigate();
-  
-  const [currentIndex, setCurrentIndex] = useState(0);
   
   // Fetch manga data
   const { data: manga, isLoading: loadingManga } = useQuery({
@@ -108,41 +104,29 @@ const Reader = () => {
     enabled: !!chapterId
   });
   
+  
   const loading = loadingManga || loadingChapter || loadingPages;
   
-  const nextPage = () => {
-    if (currentIndex < pages.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-      window.scrollTo(0, 0);
+  const nextChapter = () => {
+    const currentChapterIndex = chapters.findIndex(c => c.id === chapterId);
+    if (currentChapterIndex > 0) {
+      navigate(`/manga/${mangaId}/chapter/${chapters[currentChapterIndex - 1].id}`);
     } else {
-      // Go to next chapter if available
-      const currentChapterIndex = chapters.findIndex(c => c.id === chapterId);
-      if (currentChapterIndex > 0) { // We're sorting from newest to oldest, so next is -1
-        navigate(`/manga/${mangaId}/chapter/${chapters[currentChapterIndex - 1].id}`);
-      } else {
-        toast.info("You've reached the latest chapter");
-      }
+      toast.info("You've reached the latest chapter");
     }
   };
   
-  const prevPage = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-      window.scrollTo(0, 0);
+  const prevChapter = () => {
+    const currentChapterIndex = chapters.findIndex(c => c.id === chapterId);
+    if (currentChapterIndex < chapters.length - 1) {
+      navigate(`/manga/${mangaId}/chapter/${chapters[currentChapterIndex + 1].id}`);
     } else {
-      // Go to previous chapter if available
-      const currentChapterIndex = chapters.findIndex(c => c.id === chapterId);
-      if (currentChapterIndex < chapters.length - 1) { // Previous is +1
-        navigate(`/manga/${mangaId}/chapter/${chapters[currentChapterIndex + 1].id}`);
-      } else {
-        toast.info("This is the first chapter");
-      }
+      toast.info("This is the first chapter");
     }
   };
   
   const navigateToChapter = (targetChapterId: string) => {
     navigate(`/manga/${mangaId}/chapter/${targetChapterId}`);
-    setCurrentIndex(0); // Reset to first page when changing chapters
   };
   
   const getNextChapter = () => {
@@ -155,19 +139,6 @@ const Reader = () => {
     return currentChapterIndex < chapters.length - 1 ? chapters[currentChapterIndex + 1] : null;
   };
   
-  // Handle arrow key navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") {
-        nextPage();
-      } else if (e.key === "ArrowLeft") {
-        prevPage();
-      }
-    };
-    
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [pages, currentIndex, chapterId]);
   
   if (loading) {
     return (
@@ -195,8 +166,8 @@ const Reader = () => {
     );
   }
   
-  const nextChapter = getNextChapter();
-  const prevChapter = getPrevChapter();
+  const nextChapterData = getNextChapter();
+  const prevChapterData = getPrevChapter();
   
   return (
     <div className="flex flex-col items-center min-h-screen">
@@ -255,73 +226,47 @@ const Reader = () => {
         </div>
       </div>
       
-      {/* Page Display */}
-      <div 
-        className="w-full max-w-3xl mt-20 mb-8 px-4"
-        onClick={nextPage}
-      >
-        {pages.length > 0 && (
-          <img 
-            src={pages[currentIndex]?.imageUrl} 
-            alt={`Page ${pages[currentIndex]?.pageNumber}`}
-            className="w-full h-auto object-contain select-none pointer-events-none"
-          />
-        )}
-        
-        {/* Page Counter */}
-        <div className="mt-4 text-center text-sm text-muted-foreground">
-          Page {currentIndex + 1} of {pages.length}
+      {/* Pages Display */}
+      <div className="w-full max-w-3xl mt-20 mb-8 px-4">
+        <div className="space-y-4">
+          {pages.map((page, index) => (
+            <div key={page.id} className="w-full">
+              <img 
+                src={page.imageUrl} 
+                alt={`Page ${page.pageNumber}`}
+                className="w-full h-auto object-contain select-none"
+              />
+              <div className="text-center text-sm text-muted-foreground mt-2">
+                Page {page.pageNumber}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
       
-      {/* Navigation Controls */}
+      {/* Chapter Navigation */}
       <div className="fixed bottom-4 inset-x-0 z-30">
         <div className="container mx-auto px-4">
           <div className="flex justify-between gap-4 backdrop-blur-md bg-black/40 rounded-full p-1 max-w-md mx-auto">
-            {/* Previous Chapter */}
             <Button
               variant="ghost"
               size="icon"
-              disabled={!prevChapter}
-              onClick={() => prevChapter && navigateToChapter(prevChapter.id)}
+              disabled={!prevChapterData}
+              onClick={prevChapter}
               className="rounded-full"
             >
               <ChevronLeft size={20} />
             </Button>
             
-            {/* Previous Page */}
-            <Button
-              variant="ghost"
-              size="icon"
-              disabled={currentIndex === 0 && !prevChapter}
-              onClick={prevPage}
-              className="rounded-full"
-            >
-              <ArrowLeft size={20} />
-            </Button>
-            
-            {/* Page Indicator */}
             <div className="flex items-center text-xs px-2">
-              {currentIndex + 1} / {pages.length}
+              Chapter {chapter.number}
             </div>
             
-            {/* Next Page */}
             <Button
               variant="ghost"
               size="icon"
-              disabled={currentIndex === pages.length - 1 && !nextChapter}
-              onClick={nextPage}
-              className="rounded-full"
-            >
-              <ArrowRight size={20} />
-            </Button>
-            
-            {/* Next Chapter */}
-            <Button
-              variant="ghost"
-              size="icon"
-              disabled={!nextChapter}
-              onClick={() => nextChapter && navigateToChapter(nextChapter.id)}
+              disabled={!nextChapterData}
+              onClick={nextChapter}
               className="rounded-full"
             >
               <ChevronRight size={20} />
