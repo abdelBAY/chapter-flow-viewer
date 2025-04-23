@@ -20,12 +20,17 @@ const ChapterList = ({ chapters, mangaId, className }: ChapterListProps) => {
           <p className="text-muted-foreground">No chapters available.</p>
         ) : (
           chapters.map((chapter) => (
-            <Card key={chapter.id} className="bg-secondary/30 hover:bg-secondary/40 transition-colors">
-              <CardContent className="p-4 flex justify-between items-center">
+            <Card 
+              key={chapter.id} 
+              className="bg-secondary/30 hover:bg-secondary/40 transition-colors flex items-center"
+            >
+              <div className="bg-white text-black rounded-l-lg px-4 py-2 mr-4 font-bold text-lg">
+                {chapter.number}
+              </div>
+              <CardContent className="p-4 flex-1 flex justify-between items-center">
                 <div>
                   <h4 className="font-medium">
-                    Chapter {chapter.number}
-                    {chapter.title !== `Chapter ${chapter.number}` && `: ${chapter.title}`}
+                    {chapter.title !== `Chapter ${chapter.number}` && chapter.title}
                   </h4>
                   <p className="text-xs text-muted-foreground">
                     {formatDistanceToNow(new Date(chapter.createdAt), { addSuffix: true })}
