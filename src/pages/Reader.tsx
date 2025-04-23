@@ -1,27 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  ArrowLeft, 
-  List,
-  ChevronRight, 
-  ChevronLeft
-} from "lucide-react";
 import { toast } from "sonner";
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { 
-  Manga, 
-  Chapter, 
-  ChapterFromDB, 
-  MangaFromDB, 
-  PageFromDB,
   adaptMangaFromDB, 
   adaptChapterFromDB, 
   adaptPageFromDB 
 } from "@/types/manga";
+import { ReaderHeader } from "@/components/manga/reader/ReaderHeader";
+import { ChapterSidebar } from "@/components/manga/reader/ChapterSidebar";
+import { PageDisplay } from "@/components/manga/reader/PageDisplay";
+import { ChapterNavigation } from "@/components/manga/reader/ChapterNavigation";
 
 const Reader = () => {
   const { id: mangaId, chapterId } = useParams<{ id: string; chapterId: string }>();
@@ -171,108 +163,27 @@ const Reader = () => {
   
   return (
     <div className="flex flex-col items-center min-h-screen">
-      {/* Reader Header */}
-      <div className="fixed top-16 inset-x-0 z-30 bg-black/70 backdrop-blur-sm border-b border-white/10">
-        <div className="container mx-auto py-2 px-4 flex justify-between items-center">
-          <div className="flex gap-2 items-center">
-            <Link 
-              to={`/manga/${mangaId}`}
-              className="p-2 rounded-full hover:bg-secondary/50 transition-colors"
-            >
-              <ArrowLeft size={20} />
-            </Link>
-            
-            <div className="text-sm">
-              <h2 className="font-medium">{manga.title}</h2>
-              <p className="text-xs text-muted-foreground">Chapter {chapter.number}</p>
-            </div>
-          </div>
-          
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <List size={20} />
-              </Button>
-            </SheetTrigger>
-            <SheetContent className="bg-background border-l border-white/10">
-              <div className="space-y-4">
-                <Link 
-                  to={`/manga/${mangaId}`}
-                  className="flex items-center gap-2 font-medium"
-                >
-                  <ArrowLeft size={16} />
-                  Back to {manga.title}
-                </Link>
-                
-                <h3 className="text-lg font-semibold mt-4">Chapters</h3>
-                <div className="h-[70vh] overflow-y-auto pr-4 space-y-2">
-                  {chapters
-                    .sort((a, b) => b.number - a.number)
-                    .map((c) => (
-                      <SheetClose key={c.id} asChild>
-                        <Button
-                          variant="ghost"
-                          className={`w-full justify-start text-left ${c.id === chapter.id ? 'bg-secondary/50' : ''}`}
-                          onClick={() => navigateToChapter(c.id)}
-                        >
-                          Chapter {c.number}
-                        </Button>
-                      </SheetClose>
-                    ))}
-                </div>
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
-      </div>
+      <ReaderHeader manga={manga} chapter={chapter} />
       
-      {/* Pages Display */}
       <div className="w-full max-w-3xl mt-20 mb-8 px-4">
-        <div className="space-y-4">
-          {pages.map((page, index) => (
-            <div key={page.id} className="w-full">
-              <img 
-                src={page.imageUrl} 
-                alt={`Page ${page.pageNumber}`}
-                className="w-full h-auto object-contain select-none"
-              />
-              <div className="text-center text-sm text-muted-foreground mt-2">
-                Page {page.pageNumber}
-              </div>
-            </div>
-          ))}
-        </div>
+        <PageDisplay pages={pages} />
       </div>
       
-      {/* Chapter Navigation */}
-      <div className="fixed bottom-4 inset-x-0 z-30">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between gap-4 backdrop-blur-md bg-black/40 rounded-full p-1 max-w-md mx-auto">
-            <Button
-              variant="ghost"
-              size="icon"
-              disabled={!prevChapterData}
-              onClick={prevChapter}
-              className="rounded-full"
-            >
-              <ChevronLeft size={20} />
-            </Button>
-            
-            <div className="flex items-center text-xs px-2">
-              Chapter {chapter.number}
-            </div>
-            
-            <Button
-              variant="ghost"
-              size="icon"
-              disabled={!nextChapterData}
-              onClick={nextChapter}
-              className="rounded-full"
-            >
-              <ChevronRight size={20} />
-            </Button>
-          </div>
-        </div>
+      <ChapterNavigation
+        currentChapter={chapter}
+        nextChapter={nextChapterData}
+        prevChapter={prevChapterData}
+        onNextChapter={nextChapter}
+        onPrevChapter={prevChapter}
+      />
+      
+      <div className="fixed top-16 right-4 z-30">
+        <ChapterSidebar
+          manga={manga}
+          chapters={chapters}
+          currentChapter={chapter}
+          onChapterSelect={navigateToChapter}
+        />
       </div>
     </div>
   );
