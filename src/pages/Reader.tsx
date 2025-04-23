@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,10 @@ import { useQuery } from "@tanstack/react-query";
 import { 
   adaptMangaFromDB, 
   adaptChapterFromDB, 
-  adaptPageFromDB 
+  adaptPageFromDB,
+  MangaFromDB,
+  ChapterFromDB,
+  PageFromDB
 } from "@/types/manga";
 import { ReaderHeader } from "@/components/manga/reader/ReaderHeader";
 import { ChapterSidebar } from "@/components/manga/reader/ChapterSidebar";
