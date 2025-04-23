@@ -1,62 +1,103 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Chapter, Page, Manga } from "@/types/manga";
-import { getChaptersByMangaId, getPagesByChapterId, getMangaById } from "@/services/mangaService";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
   ArrowLeft, 
   ArrowRight, 
-  Menu, 
-  X, 
+  List,
   ChevronRight, 
-  ChevronLeft,
-  List
+  ChevronLeft
 } from "lucide-react";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { Manga, Chapter } from "@/types/manga";
+
+interface Page {
+  id: string;
+  chapter_id: string;
+  page_number: number;
+  image_url: string;
+}
 
 const Reader = () => {
   const { id: mangaId, chapterId } = useParams<{ id: string; chapterId: string }>();
   const navigate = useNavigate();
   
-  const [manga, setManga] = useState<Manga | null>(null);
-  const [chapter, setChapter] = useState<Chapter | null>(null);
-  const [chapters, setChapters] = useState<Chapter[]>([]);
-  const [pages, setPages] = useState<Page[]>([]);
-  const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!mangaId || !chapterId) return;
+  // Fetch manga data
+  const { data: manga, isLoading: loadingManga } = useQuery({
+    queryKey: ["manga-details", mangaId],
+    queryFn: async () => {
+      if (!mangaId) return null;
+      const { data, error } = await supabase
+        .from("cms_mangas")
+        .select("*")
+        .eq("id", mangaId)
+        .single();
       
-      setLoading(true);
-      try {
-        const mangaData = await getMangaById(mangaId);
-        setManga(mangaData || null);
-        
-        const chaptersData = await getChaptersByMangaId(mangaId);
-        setChapters(chaptersData);
-        
-        const currentChapter = chaptersData.find(c => c.id === chapterId);
-        setChapter(currentChapter || null);
-        
-        if (currentChapter) {
-          const pagesData = await getPagesByChapterId(chapterId);
-          setPages(pagesData);
-        }
-      } catch (error) {
-        console.error("Failed to fetch chapter data:", error);
-        toast.error("Failed to load chapter");
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchData();
-  }, [mangaId, chapterId]);
+      if (error) throw error;
+      return data as Manga;
+    },
+    enabled: !!mangaId
+  });
+
+  // Fetch chapters for this manga
+  const { data: chapters = [] } = useQuery({
+    queryKey: ["manga-chapters", mangaId],
+    queryFn: async () => {
+      if (!mangaId) return [];
+      const { data, error } = await supabase
+        .from("cms_chapters")
+        .select("*")
+        .eq("manga_id", mangaId)
+        .order("number", { ascending: false });
+      
+      if (error) throw error;
+      return data as Chapter[];
+    },
+    enabled: !!mangaId
+  });
+
+  // Fetch current chapter
+  const { data: chapter, isLoading: loadingChapter } = useQuery({
+    queryKey: ["chapter-detail", chapterId],
+    queryFn: async () => {
+      if (!chapterId) return null;
+      const { data, error } = await supabase
+        .from("cms_chapters")
+        .select("*")
+        .eq("id", chapterId)
+        .single();
+      
+      if (error) throw error;
+      return data as Chapter;
+    },
+    enabled: !!chapterId
+  });
+
+  // Fetch pages for current chapter
+  const { data: pages = [], isLoading: loadingPages } = useQuery({
+    queryKey: ["chapter-pages", chapterId],
+    queryFn: async () => {
+      if (!chapterId) return [];
+      const { data, error } = await supabase
+        .from("cms_pages")
+        .select("*")
+        .eq("chapter_id", chapterId)
+        .order("page_number");
+      
+      if (error) throw error;
+      return data as Page[];
+    },
+    enabled: !!chapterId
+  });
+  
+  const loading = loadingManga || loadingChapter || loadingPages;
   
   const nextPage = () => {
     if (currentIndex < pages.length - 1) {
@@ -90,6 +131,7 @@ const Reader = () => {
   
   const navigateToChapter = (targetChapterId: string) => {
     navigate(`/manga/${mangaId}/chapter/${targetChapterId}`);
+    setCurrentIndex(0); // Reset to first page when changing chapters
   };
   
   const getNextChapter = () => {
@@ -207,11 +249,13 @@ const Reader = () => {
         className="w-full max-w-3xl mt-20 mb-8 px-4"
         onClick={nextPage}
       >
-        <img 
-          src={pages[currentIndex]?.imageUrl} 
-          alt={`Page ${pages[currentIndex]?.pageNumber}`}
-          className="w-full h-auto object-contain select-none pointer-events-none"
-        />
+        {pages.length > 0 && (
+          <img 
+            src={pages[currentIndex]?.image_url} 
+            alt={`Page ${pages[currentIndex]?.page_number}`}
+            className="w-full h-auto object-contain select-none pointer-events-none"
+          />
+        )}
         
         {/* Page Counter */}
         <div className="mt-4 text-center text-sm text-muted-foreground">

@@ -22,6 +22,11 @@ export default function PagesInput({ value, error }: PagesInputProps) {
         className="bg-muted"
       />
       {error && <p className="text-sm text-destructive mt-1">Enter page count</p>}
+      {value > 0 && (
+        <p className="text-xs text-muted-foreground mt-1">
+          {value} page{value !== 1 ? 's' : ''} will be uploaded
+        </p>
+      )}
     </div>
   );
 }

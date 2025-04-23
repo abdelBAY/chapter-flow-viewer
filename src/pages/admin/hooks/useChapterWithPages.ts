@@ -33,7 +33,7 @@ export function useChapterWithPages(id?: string) {
       if (chapterData) {
         const { data: pagesData, error: pagesError } = await supabase
           .from("cms_pages")
-          .select("*")
+          .select("image_url, page_number")
           .eq("chapter_id", id)
           .order("page_number");
 
@@ -47,7 +47,7 @@ export function useChapterWithPages(id?: string) {
         return chapterWithPages;
       }
 
-      return chapterData;
+      return null;
     },
     enabled: isEditing,
   });
