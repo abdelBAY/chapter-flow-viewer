@@ -1,16 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-
-export type ChapterFromDB = {
-  id: string;
-  manga_id: string;
-  number: number;
-  title: string;
-  pages: number;
-  created_at: string;
-  updated_at: string;
-};
+import { ChapterFromDB } from "@/types/manga";
 
 export type ChapterWithPages = ChapterFromDB & {
   page_images: string[];
@@ -40,7 +31,7 @@ export function useChapterWithPages(id?: string) {
         if (pagesError) throw pagesError;
 
         const chapterWithPages: ChapterWithPages = {
-          ...chapterData,
+          ...chapterData as ChapterFromDB,
           page_images: pagesData?.map(page => page.image_url) || [],
         };
 

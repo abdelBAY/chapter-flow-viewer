@@ -17,6 +17,7 @@ export function useMangaOptions() {
         .order("title");
       
       if (error) throw error;
+      // We don't need to use the adapter here since we're just getting id and title
       return data as MangaOption[] ?? [];
     },
   });

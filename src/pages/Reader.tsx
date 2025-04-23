@@ -14,14 +14,16 @@ import { toast } from "sonner";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { Manga, Chapter } from "@/types/manga";
-
-interface Page {
-  id: string;
-  chapter_id: string;
-  page_number: number;
-  image_url: string;
-}
+import { 
+  Manga, 
+  Chapter, 
+  ChapterFromDB, 
+  MangaFromDB, 
+  PageFromDB,
+  adaptMangaFromDB, 
+  adaptChapterFromDB, 
+  adaptPageFromDB 
+} from "@/types/manga";
 
 const Reader = () => {
   const { id: mangaId, chapterId } = useParams<{ id: string; chapterId: string }>();
@@ -41,7 +43,16 @@ const Reader = () => {
         .single();
       
       if (error) throw error;
-      return data as Manga;
+      
+      // Get manga genres
+      const { data: genresData, error: genresError } = await supabase
+        .from("cms_manga_genres")
+        .select("cms_genres(name)")
+        .eq("manga_id", mangaId);
+        
+      const genres = genresError ? [] : genresData?.map(g => g.cms_genres?.name).filter(Boolean) as string[];
+      
+      return adaptMangaFromDB(data as MangaFromDB, genres);
     },
     enabled: !!mangaId
   });
@@ -58,7 +69,7 @@ const Reader = () => {
         .order("number", { ascending: false });
       
       if (error) throw error;
-      return data as Chapter[];
+      return (data as ChapterFromDB[]).map(adaptChapterFromDB);
     },
     enabled: !!mangaId
   });
@@ -75,7 +86,7 @@ const Reader = () => {
         .single();
       
       if (error) throw error;
-      return data as Chapter;
+      return adaptChapterFromDB(data as ChapterFromDB);
     },
     enabled: !!chapterId
   });
@@ -92,7 +103,7 @@ const Reader = () => {
         .order("page_number");
       
       if (error) throw error;
-      return data as Page[];
+      return (data as PageFromDB[]).map(adaptPageFromDB);
     },
     enabled: !!chapterId
   });
@@ -251,8 +262,8 @@ const Reader = () => {
       >
         {pages.length > 0 && (
           <img 
-            src={pages[currentIndex]?.image_url} 
-            alt={`Page ${pages[currentIndex]?.page_number}`}
+            src={pages[currentIndex]?.imageUrl} 
+            alt={`Page ${pages[currentIndex]?.pageNumber}`}
             className="w-full h-auto object-contain select-none pointer-events-none"
           />
         )}
