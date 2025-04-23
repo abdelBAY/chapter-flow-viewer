@@ -1,40 +1,25 @@
-# Welcome to your Lovable project
+# Manga Reader 📚
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-4.9%2B-blue)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-18%2B-blue)](https://reactjs.org/)
+
+A modern manhwa/manga reading platform with seamless browsing, reading experience, and personal tracking features. Built with React, Express, and PostgreSQL.
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/e9c8477c-c7c1-4508-8615-64226ccb0b66
+**URL**:
 
-## How can I edit this code?
+## Features ✨
 
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/e9c8477c-c7c1-4508-8615-64226ccb0b66) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+- 🖼️ Grid-based manga browsing with lazy loading
+- 🔍 Advanced search with genre filters and status filtering
+- 📖 Chapter reader with swipe navigation and preloading
+- 🌙 Dark mode support
+- 🔐 User authentication and session management
+- ❤️ Favorites system with persistent storage
+- 📱 Fully responsive design
+- ⚡ Optimized image loading and performance
 
 **Edit a file directly in GitHub**
 
@@ -50,7 +35,7 @@ npm run dev
 - Click on "New codespace" to launch a new Codespace environment.
 - Edit files directly within the Codespace and commit and push your changes once you're done.
 
-## What technologies are used for this project?
+## Tech Stack 🛠️
 
 This project is built with:
 
@@ -59,15 +44,3 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/e9c8477c-c7c1-4508-8615-64226ccb0b66) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
