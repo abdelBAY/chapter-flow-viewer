@@ -59,13 +59,23 @@ const HomePage = () => {
 
   return (
     <div className="space-y-12">
-      <section>
-        <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-gradient">Welcome to MangaReader</h1>
-        <p className="text-muted-foreground mb-8">
-          Discover and read your favorite manga series in one place
-        </p>
+      <section className="relative overflow-hidden rounded-xl bg-gradient-to-br from-manga-accent/20 to-manga-dark/40 p-8 md:p-12">
+        <div className="relative z-10">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-br from-white to-white/70 bg-clip-text text-transparent">
+            Welcome to MangaReader
+          </h1>
+          <p className="text-lg sm:text-xl text-white/80 max-w-2xl">
+            Discover and read your favorite manga series all in one place. From action-packed adventures to heartwarming stories.
+          </p>
+        </div>
+        
+        {/* Decorative elements */}
+        <div className="absolute inset-0 bg-[url('/lovable-uploads/1204832b-b2db-4e6a-8548-0a23ce974c8f.png')] opacity-10 bg-cover bg-center" />
+        <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-background to-transparent" />
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-manga-accent/10 to-transparent" />
       </section>
-      
+
+      {/* Latest Updates Section */}
       <section>
         {isLoading ? (
           <div className="space-y-6">
@@ -84,7 +94,8 @@ const HomePage = () => {
           <MangaGrid mangas={latestMangas} title="Latest Updates" showChapters />
         )}
       </section>
-      
+
+      {/* Popular Series Section */}
       <section>
         {isLoading ? (
           <div className="space-y-6">
