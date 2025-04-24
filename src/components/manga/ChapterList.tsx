@@ -4,48 +4,49 @@ import { Chapter } from "@/types/manga";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDistanceToNow } from "date-fns";
+import { ChevronRight } from "lucide-react";
 
 interface ChapterListProps {
   chapters: Chapter[];
   mangaId: string;
   className?: string;
+  limit?: number;
 }
 
-const ChapterList = ({ chapters, mangaId, className }: ChapterListProps) => {
+const ChapterList = ({ chapters, mangaId, className, limit }: ChapterListProps) => {
+  const displayedChapters = limit ? chapters.slice(0, limit) : chapters;
+
   return (
     <div className={className}>
-      <h3 className="text-xl font-semibold mb-4">Chapters</h3>
-      <div className="space-y-3">
+      <div className="space-y-2">
         {chapters.length === 0 ? (
-          <p className="text-muted-foreground">No chapters available.</p>
+          <p className="text-muted-foreground text-sm">No chapters available.</p>
         ) : (
-          chapters.map((chapter) => (
+          displayedChapters.map((chapter) => (
             <Card 
               key={chapter.id} 
-              className="bg-secondary/30 hover:bg-secondary/40 transition-colors flex items-center"
+              className="bg-secondary/10 hover:bg-secondary/20 transition-colors"
             >
-              <div className="bg-white text-black rounded-l-lg px-4 py-2 mr-4 font-bold text-lg">
-                {chapter.number}
-              </div>
-              <CardContent className="p-4 flex-1 flex justify-between items-center">
-                <div>
-                  <h4 className="font-medium">
+              <CardContent className="p-3 flex items-center gap-3">
+                <div className="bg-white text-black rounded px-3 py-1 font-bold text-sm">
+                  {chapter.number}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium truncate">
                     {chapter.title !== `Chapter ${chapter.number}` && chapter.title}
-                  </h4>
+                  </div>
                   <p className="text-xs text-muted-foreground">
                     {formatDistanceToNow(new Date(chapter.createdAt), { addSuffix: true })}
-                    {" · "}
-                    {chapter.pages} pages
                   </p>
                 </div>
                 <Button 
-                  variant="outline" 
+                  variant="ghost" 
                   size="sm" 
                   asChild
-                  className="hover:bg-manga-accent hover:text-white"
+                  className="ml-auto p-0 h-8 w-8"
                 >
                   <Link to={`/manga/${mangaId}/chapter/${chapter.id}`}>
-                    Read
+                    <ChevronRight className="h-4 w-4" />
                   </Link>
                 </Button>
               </CardContent>

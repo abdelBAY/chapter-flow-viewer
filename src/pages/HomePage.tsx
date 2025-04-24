@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Manga } from "@/types/manga";
 import MangaGrid from "@/components/manga/MangaGrid";
@@ -16,6 +15,7 @@ const mapSupabaseManga = (row: any): Manga => ({
   genres: [], // Genres are not fetched here
   createdAt: row.created_at,
   updatedAt: row.updated_at,
+  recentChapters: row.recent_chapters || [],
 });
 
 const HomePage = () => {
@@ -26,18 +26,27 @@ const HomePage = () => {
   useEffect(() => {
     const fetchMangas = async () => {
       setIsLoading(true);
-      // Fetch from Supabase
       const { data, error } = await supabase
         .from("cms_mangas")
-        .select("*")
-        .order("updated_at", { ascending: false });
+        .select(`
+          *,
+          recent_chapters:cms_chapters(
+            id,
+            number,
+            title,
+            created_at,
+            pages
+          )
+        `)
+        .order("updated_at", { ascending: false })
+        .limit(6);
+
       if (error) {
         setIsLoading(false);
         return;
       }
+      
       const mangas: Manga[] = (data || []).map(mapSupabaseManga);
-
-      // "Latest Updates" is already sorted by updatedAt descending by our query
       setLatestMangas(mangas);
 
       // "Popular Series": just shuffle for now
@@ -72,7 +81,7 @@ const HomePage = () => {
             </div>
           </div>
         ) : (
-          <MangaGrid mangas={latestMangas} title="Latest Updates" />
+          <MangaGrid mangas={latestMangas} title="Latest Updates" showChapters />
         )}
       </section>
       
