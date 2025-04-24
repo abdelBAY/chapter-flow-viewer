@@ -1,4 +1,3 @@
-
 export interface Manga {
   id: string;
   title: string;
@@ -10,6 +9,7 @@ export interface Manga {
   genres: string[];
   createdAt: string;
   updatedAt: string;
+  recentChapters?: Chapter[];
 }
 
 export interface Chapter {

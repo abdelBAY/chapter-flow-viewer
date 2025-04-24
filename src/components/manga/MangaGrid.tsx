@@ -1,7 +1,7 @@
 
 import { Manga } from "@/types/manga";
 import MangaCard from "./MangaCard";
-import { ChapterList } from "./ChapterList";
+import ChapterList from "./ChapterList";
 
 interface MangaGridProps {
   mangas: Manga[];
@@ -19,9 +19,9 @@ const MangaGrid = ({ mangas, title, showChapters = false }: MangaGridProps) => {
         {mangas.map((manga) => (
           <div key={manga.id} className="flex flex-col">
             <MangaCard manga={manga} />
-            {showChapters && (
+            {showChapters && manga.recentChapters && (
               <ChapterList 
-                chapters={manga.recentChapters || []}
+                chapters={manga.recentChapters}
                 mangaId={manga.id}
                 className="mt-4"
                 limit={3}

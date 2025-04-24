@@ -13,7 +13,7 @@ interface ChapterListProps {
   limit?: number;
 }
 
-const ChapterList = ({ chapters, mangaId, className, limit }: ChapterListProps) => {
+export const ChapterList = ({ chapters, mangaId, className, limit }: ChapterListProps) => {
   const displayedChapters = limit ? chapters.slice(0, limit) : chapters;
 
   return (
