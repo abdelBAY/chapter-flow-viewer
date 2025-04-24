@@ -16,6 +16,21 @@ interface ChapterListProps {
 export const ChapterList = ({ chapters, mangaId, className, limit }: ChapterListProps) => {
   const displayedChapters = limit ? chapters.slice(0, limit) : chapters;
 
+  // Helper function to safely format date
+  const safeFormatDate = (dateStr: string): string => {
+    try {
+      const date = new Date(dateStr);
+      // Check if date is valid before formatting
+      if (isNaN(date.getTime())) {
+        return "Unknown date";
+      }
+      return formatDistanceToNow(date, { addSuffix: true });
+    } catch (error) {
+      console.error("Invalid date format:", dateStr, error);
+      return "Unknown date";
+    }
+  };
+
   return (
     <div className={className}>
       <div className="space-y-2">
@@ -36,7 +51,7 @@ export const ChapterList = ({ chapters, mangaId, className, limit }: ChapterList
                     {chapter.title !== `Chapter ${chapter.number}` && chapter.title}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(chapter.createdAt), { addSuffix: true })}
+                    {safeFormatDate(chapter.createdAt)}
                   </p>
                 </div>
                 <Button 
