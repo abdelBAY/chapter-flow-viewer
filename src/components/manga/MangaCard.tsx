@@ -10,12 +10,6 @@ interface MangaCardProps {
 }
 
 const MangaCard = ({ manga, className }: MangaCardProps) => {
-  // Function to display only a subset of genres to prevent overcrowding
-  const displayGenres = (genres: string[]) => {
-    if (genres.length <= 2) return genres;
-    return [...genres.slice(0, 2), `+${genres.length - 2}`];
-  };
-
   const statusColors = {
     ongoing: "bg-green-500/20 text-green-300 border-green-500/30",
     completed: "bg-blue-500/20 text-blue-300 border-blue-500/30",
@@ -23,47 +17,33 @@ const MangaCard = ({ manga, className }: MangaCardProps) => {
   };
 
   return (
-    <Link to={`/manga/${manga.id}`} className={cn("group", className)}>
-      <div className="relative overflow-hidden rounded-lg bg-black/40 transition-transform duration-300 group-hover:-translate-y-1">
-        <div className="relative aspect-[2/3] overflow-hidden">
-          <img
-            src={manga.cover}
-            alt={manga.title}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-          
-          {/* Status badge */}
-          <div className="absolute top-2 left-2">
-            <Badge 
-              variant="outline" 
-              className={cn("text-xs font-medium", statusColors[manga.status])}
-            >
-              {manga.status.charAt(0).toUpperCase() + manga.status.slice(1)}
-            </Badge>
-          </div>
-          
-          {/* Genre tags */}
-          <div className="absolute bottom-2 left-2 right-2 flex flex-wrap gap-1">
-            {displayGenres(manga.genres).map((genre, index) => (
-              <Badge
-                key={index}
-                variant="secondary"
-                className="text-xs bg-black/60 backdrop-blur-sm"
-              >
-                {genre}
-              </Badge>
-            ))}
-          </div>
-        </div>
-        
-        <div className="p-3">
-          <h3 className="font-medium line-clamp-1 group-hover:text-manga-accent transition-colors">
-            {manga.title}
-          </h3>
-          <p className="text-xs text-muted-foreground mt-1">
-            {manga.author}
-          </p>
+    <Link 
+      to={`/manga/${manga.id}`} 
+      className={cn(
+        "block w-full h-full relative group overflow-hidden",
+        className
+      )}
+    >
+      <img
+        src={manga.cover}
+        alt={manga.title}
+        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+      
+      {/* Status badge */}
+      <div className="absolute top-2 right-2">
+        <Badge 
+          variant="outline" 
+          className={cn("text-xs font-medium", statusColors[manga.status])}
+        >
+          {manga.status.charAt(0).toUpperCase() + manga.status.slice(1)}
+        </Badge>
+      </div>
+      
+      <div className="absolute bottom-0 left-0 right-0 p-3">
+        <div className="flex items-center gap-2 text-xs text-white/80">
+          <span>{manga.author}</span>
         </div>
       </div>
     </Link>

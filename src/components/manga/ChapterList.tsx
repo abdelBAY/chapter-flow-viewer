@@ -1,10 +1,8 @@
 
 import { Link } from "react-router-dom";
 import { Chapter } from "@/types/manga";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { formatDistanceToNow } from "date-fns";
-import { ChevronRight } from "lucide-react";
+import { Book, Clock } from "lucide-react";
 
 interface ChapterListProps {
   chapters: Chapter[];
@@ -16,17 +14,12 @@ interface ChapterListProps {
 export const ChapterList = ({ chapters, mangaId, className, limit }: ChapterListProps) => {
   const displayedChapters = limit ? chapters.slice(0, limit) : chapters;
 
-  // Helper function to safely format date
   const safeFormatDate = (dateStr: string): string => {
     try {
       const date = new Date(dateStr);
-      // Check if date is valid before formatting
-      if (isNaN(date.getTime())) {
-        return "Unknown date";
-      }
+      if (isNaN(date.getTime())) return "Unknown date";
       return formatDistanceToNow(date, { addSuffix: true });
     } catch (error) {
-      console.error("Invalid date format:", dateStr, error);
       return "Unknown date";
     }
   };
@@ -41,28 +34,12 @@ export const ChapterList = ({ chapters, mangaId, className, limit }: ChapterList
             <Link 
               key={chapter.id}
               to={`/manga/${mangaId}/chapter/${chapter.id}`}
-              className="block"
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              <Card className="bg-secondary/10 hover:bg-secondary/20 transition-colors">
-                <CardContent className="p-2 flex items-center gap-2">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">
-                        Ch. {chapter.number}
-                      </span>
-                      {chapter.title !== `Chapter ${chapter.number}` && (
-                        <span className="text-xs text-muted-foreground truncate">
-                          {chapter.title}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {safeFormatDate(chapter.createdAt)}
-                    </p>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </CardContent>
-              </Card>
+              <Book className="h-3.5 w-3.5" />
+              <span className="font-medium">Chapter {chapter.number}</span>
+              <Clock className="h-3.5 w-3.5 ml-auto" />
+              <span className="text-xs">{safeFormatDate(chapter.createdAt)}</span>
             </Link>
           ))
         )}
