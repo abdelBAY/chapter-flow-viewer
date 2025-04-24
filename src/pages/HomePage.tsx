@@ -3,6 +3,14 @@ import { Manga } from "@/types/manga";
 import MangaGrid from "@/components/manga/MangaGrid";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import MangaCard from "@/components/manga/MangaCard";
 
 const mapSupabaseManga = (row: any): Manga => ({
   id: row.id,
@@ -69,13 +77,11 @@ const HomePage = () => {
           </p>
         </div>
         
-        {/* Decorative elements */}
         <div className="absolute inset-0 bg-[url('/lovable-uploads/1204832b-b2db-4e6a-8548-0a23ce974c8f.png')] opacity-10 bg-cover bg-center" />
         <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-background to-transparent" />
         <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-manga-accent/10 to-transparent" />
       </section>
 
-      {/* Latest Updates Section */}
       <section>
         {isLoading ? (
           <div className="space-y-6">
@@ -91,11 +97,39 @@ const HomePage = () => {
             </div>
           </div>
         ) : (
-          <MangaGrid mangas={latestMangas} title="Latest Updates" showChapters />
+          <div className="space-y-6">
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-gradient">Latest Updates</h2>
+            </div>
+            <Carousel className="w-full">
+              <CarouselContent className="-ml-4">
+                {latestMangas.map((manga) => (
+                  <CarouselItem key={manga.id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                    <div className="aspect-[3/4] relative overflow-hidden rounded-lg mb-3">
+                      <MangaCard manga={manga} />
+                    </div>
+                    {manga.recentChapters && manga.recentChapters.length > 0 && (
+                      <div className="mt-2">
+                        <h3 className="font-semibold text-lg mb-1 line-clamp-1">
+                          {manga.title}
+                        </h3>
+                        <ChapterList 
+                          chapters={manga.recentChapters}
+                          mangaId={manga.id}
+                          limit={2}
+                        />
+                      </div>
+                    )}
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
+          </div>
         )}
       </section>
 
-      {/* Popular Series Section */}
       <section>
         {isLoading ? (
           <div className="space-y-6">
@@ -111,7 +145,27 @@ const HomePage = () => {
             </div>
           </div>
         ) : (
-          <MangaGrid mangas={popularMangas} title="Popular Series" />
+          <div className="space-y-6">
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-gradient">Popular Series</h2>
+            </div>
+            <Carousel className="w-full">
+              <CarouselContent className="-ml-4">
+                {popularMangas.map((manga) => (
+                  <CarouselItem key={manga.id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                    <div className="aspect-[3/4] relative overflow-hidden rounded-lg mb-3">
+                      <MangaCard manga={manga} />
+                    </div>
+                    <h3 className="font-semibold text-lg mb-1 line-clamp-1">
+                      {manga.title}
+                    </h3>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
+          </div>
         )}
       </section>
     </div>
