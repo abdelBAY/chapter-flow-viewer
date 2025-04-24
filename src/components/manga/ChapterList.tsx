@@ -33,39 +33,37 @@ export const ChapterList = ({ chapters, mangaId, className, limit }: ChapterList
 
   return (
     <div className={className}>
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         {chapters.length === 0 ? (
           <p className="text-muted-foreground text-sm">No chapters available.</p>
         ) : (
           displayedChapters.map((chapter) => (
-            <Card 
-              key={chapter.id} 
-              className="bg-secondary/10 hover:bg-secondary/20 transition-colors"
+            <Link 
+              key={chapter.id}
+              to={`/manga/${mangaId}/chapter/${chapter.id}`}
+              className="block"
             >
-              <CardContent className="p-3 flex items-center gap-3">
-                <div className="bg-white text-black rounded px-3 py-1 font-bold text-sm">
-                  {chapter.number}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate">
-                    {chapter.title !== `Chapter ${chapter.number}` && chapter.title}
+              <Card className="bg-secondary/10 hover:bg-secondary/20 transition-colors">
+                <CardContent className="p-2 flex items-center gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">
+                        Ch. {chapter.number}
+                      </span>
+                      {chapter.title !== `Chapter ${chapter.number}` && (
+                        <span className="text-xs text-muted-foreground truncate">
+                          {chapter.title}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {safeFormatDate(chapter.createdAt)}
+                    </p>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    {safeFormatDate(chapter.createdAt)}
-                  </p>
-                </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  asChild
-                  className="ml-auto p-0 h-8 w-8"
-                >
-                  <Link to={`/manga/${mangaId}/chapter/${chapter.id}`}>
-                    <ChevronRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </CardContent>
+              </Card>
+            </Link>
           ))
         )}
       </div>

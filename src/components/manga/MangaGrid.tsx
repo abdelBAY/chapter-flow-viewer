@@ -17,13 +17,15 @@ const MangaGrid = ({ mangas, title, showChapters = false }: MangaGridProps) => {
       )}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {mangas.map((manga) => (
-          <div key={manga.id} className="flex flex-col">
-            <MangaCard manga={manga} />
+          <div key={manga.id} className="flex flex-row gap-4">
+            <div className="w-[180px] shrink-0">
+              <MangaCard manga={manga} />
+            </div>
             {showChapters && manga.recentChapters && (
               <ChapterList 
                 chapters={manga.recentChapters}
                 mangaId={manga.id}
-                className="mt-4"
+                className="flex-1"
                 limit={3}
               />
             )}
