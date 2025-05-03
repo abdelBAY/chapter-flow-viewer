@@ -28,18 +28,18 @@ export const ChapterList = ({ chapters, mangaId, className, limit }: ChapterList
     <div className={className}>
       <div className="space-y-1.5">
         {chapters.length === 0 ? (
-          <p className="text-muted-foreground text-sm">No chapters available.</p>
+          <p className="text-white/50 text-sm">No chapters available.</p>
         ) : (
           displayedChapters.map((chapter) => (
             <Link 
               key={chapter.id}
               to={`/manga/${mangaId}/chapter/${chapter.id}`}
-              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-2 text-sm text-white/70 hover:text-manga-accent transition-colors p-1 rounded hover:bg-white/5"
             >
-              <Book className="h-3.5 w-3.5" />
+              <Book className="h-3.5 w-3.5 text-manga-accent" />
               <span className="font-medium">Chapter {chapter.number}</span>
-              <Clock className="h-3.5 w-3.5 ml-auto" />
-              <span className="text-xs">{safeFormatDate(chapter.createdAt)}</span>
+              <Clock className="h-3.5 w-3.5 ml-auto text-white/50" />
+              <span className="text-xs text-white/50">{safeFormatDate(chapter.createdAt)}</span>
             </Link>
           ))
         )}
