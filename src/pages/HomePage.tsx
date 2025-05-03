@@ -62,7 +62,7 @@ const HomePage = () => {
       <section className="relative overflow-hidden rounded-xl bg-gradient-to-br from-manga-accent/20 to-manga-dark/40 p-8 md:p-12">
         <div className="relative z-10">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-br from-white to-white/70 bg-clip-text text-transparent">
-            Welcome to MangaReader
+            Welcome to Vagua Manga
           </h1>
           <p className="text-lg sm:text-xl text-white/80 max-w-2xl">
             Discover and read your favorite manga series all in one place. From action-packed adventures to heartwarming stories.
