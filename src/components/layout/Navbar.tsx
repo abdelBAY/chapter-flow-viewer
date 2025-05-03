@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Search, Bookmark, Menu, X, User, Shield } from "lucide-react";
@@ -29,10 +30,21 @@ const Navbar = () => {
     <header className="bg-black/20 backdrop-blur-sm sticky top-0 z-50 border-b border-white/10">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
+          {/* Logo left side */}
           <Link to="/" className="flex items-center space-x-2">
-            <span className="text-xl font-bold text-gradient">MangaReader</span>
+            <span className="text-xl font-bold text-gradient">Vagua Manga</span>
           </Link>
+
+          {/* Center Logo */}
+          <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2">
+            <Link to="/">
+              <img 
+                src="/lovable-uploads/e9b47105-c4e0-436a-890e-41c8c3e560fa.png" 
+                alt="Vagua Manga Logo" 
+                className="h-12 w-auto" 
+              />
+            </Link>
+          </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
@@ -84,6 +96,16 @@ const Navbar = () => {
         {/* Mobile menu */}
         {isMenuOpen && (
           <div className="md:hidden py-4 space-y-4">
+            {/* Mobile center logo */}
+            <div className="flex justify-center mb-4">
+              <Link to="/" onClick={() => setIsMenuOpen(false)}>
+                <img 
+                  src="/lovable-uploads/e9b47105-c4e0-436a-890e-41c8c3e560fa.png" 
+                  alt="Vagua Manga Logo" 
+                  className="h-12 w-auto" 
+                />
+              </Link>
+            </div>
             <form onSubmit={handleSearch} className="flex space-x-2">
               <Input
                 type="search"
