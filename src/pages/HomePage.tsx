@@ -1,8 +1,18 @@
+
 import { useEffect, useState } from "react";
 import { Manga } from "@/types/manga";
 import MangaGrid from "@/components/manga/MangaGrid";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
+import { 
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious
+} from "@/components/ui/carousel";
+import ChapterList from "@/components/manga/ChapterList";
+import MangaCard from "@/components/manga/MangaCard";
 
 const mapSupabaseManga = (row: any): Manga => ({
   id: row.id,
@@ -91,7 +101,36 @@ const HomePage = () => {
             </div>
           </div>
         ) : (
-          <MangaGrid mangas={latestMangas} title="Latest Updates" showChapters />
+          <div className="space-y-6">
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-gradient">Latest Updates</h2>
+            </div>
+            <Carousel className="w-full">
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {latestMangas.map((manga) => (
+                  <CarouselItem key={manga.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                    <div className="group">
+                      <div className="aspect-[3/4] relative overflow-hidden rounded-lg mb-3">
+                        <MangaCard manga={manga} />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-lg mb-1 line-clamp-1">{manga.title}</h3>
+                        {manga.recentChapters && (
+                          <ChapterList 
+                            chapters={manga.recentChapters}
+                            mangaId={manga.id}
+                            limit={2}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="left-0 lg:-left-12" />
+              <CarouselNext className="right-0 lg:-right-12" />
+            </Carousel>
+          </div>
         )}
       </section>
 
@@ -111,7 +150,29 @@ const HomePage = () => {
             </div>
           </div>
         ) : (
-          <MangaGrid mangas={popularMangas} title="Popular Series" />
+          <div className="space-y-6">
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-gradient">Popular Series</h2>
+            </div>
+            <Carousel className="w-full">
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {popularMangas.map((manga) => (
+                  <CarouselItem key={manga.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                    <div className="group">
+                      <div className="aspect-[3/4] relative overflow-hidden rounded-lg mb-3">
+                        <MangaCard manga={manga} />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-lg mb-1 line-clamp-1">{manga.title}</h3>
+                      </div>
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="left-0 lg:-left-12" />
+              <CarouselNext className="right-0 lg:-right-12" />
+            </Carousel>
+          </div>
         )}
       </section>
     </div>
