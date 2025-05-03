@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/carousel";
 import ChapterList from "@/components/manga/ChapterList";
 import MangaCard from "@/components/manga/MangaCard";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const mapSupabaseManga = (row: any): Manga => ({
   id: row.id,
@@ -105,31 +106,41 @@ const HomePage = () => {
             <div className="flex items-center gap-2">
               <h2 className="text-2xl font-bold text-gradient">Latest Updates</h2>
             </div>
-            <Carousel className="w-full">
-              <CarouselContent className="-ml-2 md:-ml-4">
-                {latestMangas.map((manga) => (
-                  <CarouselItem key={manga.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                    <div className="group">
-                      <div className="aspect-[3/4] relative overflow-hidden rounded-lg mb-3">
-                        <MangaCard manga={manga} />
+            <div className="relative">
+              <Carousel
+                opts={{
+                  align: "start",
+                  loop: true,
+                }}
+                className="w-full"
+              >
+                <CarouselContent className="-ml-2 md:-ml-4">
+                  {latestMangas.map((manga) => (
+                    <CarouselItem key={manga.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
+                      <div className="group rounded-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-white/5 bg-black/20 h-full">
+                        <div className="aspect-[3/4] relative overflow-hidden">
+                          <MangaCard manga={manga} />
+                        </div>
+                        <div className="p-3">
+                          <h3 className="font-semibold text-lg mb-2 line-clamp-1">{manga.title}</h3>
+                          <ScrollArea className="h-24">
+                            {manga.recentChapters && (
+                              <ChapterList 
+                                chapters={manga.recentChapters}
+                                mangaId={manga.id}
+                                limit={3}
+                              />
+                            )}
+                          </ScrollArea>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-lg mb-1 line-clamp-1">{manga.title}</h3>
-                        {manga.recentChapters && (
-                          <ChapterList 
-                            chapters={manga.recentChapters}
-                            mangaId={manga.id}
-                            limit={2}
-                          />
-                        )}
-                      </div>
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="left-0 lg:-left-12" />
-              <CarouselNext className="right-0 lg:-right-12" />
-            </Carousel>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="absolute left-0 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 border-none text-white" />
+                <CarouselNext className="absolute right-0 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 border-none text-white" />
+              </Carousel>
+            </div>
           </div>
         )}
       </section>
@@ -154,24 +165,33 @@ const HomePage = () => {
             <div className="flex items-center gap-2">
               <h2 className="text-2xl font-bold text-gradient">Popular Series</h2>
             </div>
-            <Carousel className="w-full">
-              <CarouselContent className="-ml-2 md:-ml-4">
-                {popularMangas.map((manga) => (
-                  <CarouselItem key={manga.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                    <div className="group">
-                      <div className="aspect-[3/4] relative overflow-hidden rounded-lg mb-3">
-                        <MangaCard manga={manga} />
+            <div className="relative">
+              <Carousel
+                opts={{
+                  align: "start",
+                  loop: true,
+                }}
+                className="w-full"
+              >
+                <CarouselContent className="-ml-2 md:-ml-4">
+                  {popularMangas.map((manga) => (
+                    <CarouselItem key={manga.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
+                      <div className="group rounded-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-white/5 bg-black/20 h-full">
+                        <div className="aspect-[3/4] relative overflow-hidden">
+                          <MangaCard manga={manga} />
+                        </div>
+                        <div className="p-3">
+                          <h3 className="font-semibold text-lg line-clamp-1">{manga.title}</h3>
+                          <p className="text-sm text-white/60 mt-1">by {manga.author}</p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-lg mb-1 line-clamp-1">{manga.title}</h3>
-                      </div>
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="left-0 lg:-left-12" />
-              <CarouselNext className="right-0 lg:-right-12" />
-            </Carousel>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="absolute left-0 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 border-none text-white" />
+                <CarouselNext className="absolute right-0 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 border-none text-white" />
+              </Carousel>
+            </div>
           </div>
         )}
       </section>
