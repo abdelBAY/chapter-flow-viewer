@@ -10,6 +10,7 @@ import { useAdmin } from "@/hooks/useAdmin";
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdmin();
@@ -19,11 +20,16 @@ const Navbar = () => {
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery("");
+      setShowSearch(false);
     }
   };
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const toggleSearch = () => {
+    setShowSearch(!showSearch);
   };
 
   return (
@@ -48,23 +54,35 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
-            <form onSubmit={handleSearch} className="relative w-64">
-              <Input
-                type="search"
-                placeholder="Search manga..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-secondary/50 border-white/10 pr-10"
-              />
+            {showSearch ? (
+              <form onSubmit={handleSearch} className="relative w-64 animate-in fade-in duration-200">
+                <Input
+                  type="search"
+                  placeholder="Search manga..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="bg-secondary/50 border-white/10 pr-10"
+                  autoFocus
+                />
+                <Button 
+                  type="submit" 
+                  variant="ghost" 
+                  size="icon" 
+                  className="absolute right-0 top-0 h-full"
+                >
+                  <Search size={18} />
+                </Button>
+              </form>
+            ) : (
               <Button 
-                type="submit" 
                 variant="ghost" 
                 size="icon" 
-                className="absolute right-0 top-0 h-full"
+                onClick={toggleSearch}
+                className="text-manga-accent"
               >
-                <Search size={18} />
+                <Search size={20} />
               </Button>
-            </form>
+            )}
             <Link to="/favorites" className="flex items-center space-x-1 text-sm">
               <Bookmark size={18} className="text-manga-accent" />
               <span>Favorites</span>
@@ -106,18 +124,32 @@ const Navbar = () => {
                 />
               </Link>
             </div>
-            <form onSubmit={handleSearch} className="flex space-x-2">
-              <Input
-                type="search"
-                placeholder="Search manga..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-secondary/50 border-white/10"
-              />
-              <Button type="submit" variant="ghost" size="icon">
-                <Search size={18} />
-              </Button>
-            </form>
+            {showSearch ? (
+              <form onSubmit={handleSearch} className="flex space-x-2">
+                <Input
+                  type="search"
+                  placeholder="Search manga..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="bg-secondary/50 border-white/10 flex-1"
+                  autoFocus
+                />
+                <Button type="submit" variant="ghost" size="icon">
+                  <Search size={18} />
+                </Button>
+              </form>
+            ) : (
+              <div className="flex justify-center">
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={toggleSearch} 
+                  className="text-manga-accent"
+                >
+                  <Search size={20} />
+                </Button>
+              </div>
+            )}
             <div className="flex flex-col space-y-2">
               <Link 
                 to="/favorites"
