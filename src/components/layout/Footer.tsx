@@ -17,8 +17,9 @@ const Footer = () => {
           </div>
         </div>
         <div className="mt-6 text-center text-xs text-muted-foreground">
-          <p>© {new Date().getFullYear()} MangaReader. All rights reserved.</p>
-          <p className="mt-1">This is a demo application. All manga content is for demonstration purposes only.</p>
+          <p>© {new Date().getFullYear()} Vagua Manga. All rights reserved.</p>
+          <p className="mt-1">All the comics on this website are only previews of the original comics, there may be many language errors, character names,
+            and story lines. For the original version, please buy the comic if it's available in your city..</p>
         </div>
       </div>
     </footer>
