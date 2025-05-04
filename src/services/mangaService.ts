@@ -154,27 +154,35 @@ export const getPagesByChapterId = (chapterId: string): Promise<Page[]> => {
 };
 
 export const searchManga = (filters: SearchFilters): Promise<Manga[]> => {
+  console.log("Search filters:", filters); // Debug log to see what filters are being passed
+  
   let results = [...mockMangas];
   
   // Filter by search query
-  if (filters.query) {
-    const query = filters.query.toLowerCase();
+  if (filters.query && filters.query.trim() !== '') {
+    const query = filters.query.toLowerCase().trim();
+    console.log("Searching for:", query);
+    
     results = results.filter(manga => 
       manga.title.toLowerCase().includes(query) || 
-      manga.description.toLowerCase().includes(query)
+      (manga.description && manga.description.toLowerCase().includes(query))
     );
+    
+    console.log("Results after query filter:", results.map(m => m.title));
   }
   
-  // Filter by genres
+  // Filter by genres - only if genres are specified and length > 0
   if (filters.genres && filters.genres.length > 0) {
     results = results.filter(manga => 
       filters.genres!.some(genre => manga.genres.includes(genre))
     );
+    console.log("Results after genre filter:", results.map(m => m.title));
   }
   
-  // Filter by status
+  // Filter by status - only if status is specified and not 'all'
   if (filters.status && filters.status !== 'all') {
     results = results.filter(manga => manga.status === filters.status);
+    console.log("Results after status filter:", results.map(m => m.title));
   }
   
   // Sort results
@@ -192,6 +200,7 @@ export const searchManga = (filters: SearchFilters): Promise<Manga[]> => {
     }
   }
   
+  console.log("Final search results:", results.map(m => m.title));
   return Promise.resolve(results);
 };
 
