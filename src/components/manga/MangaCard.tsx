@@ -20,7 +20,7 @@ const MangaCard = ({ manga, className }: MangaCardProps) => {
     <Link 
       to={`/manga/${manga.id}`} 
       className={cn(
-        "block w-full h-full relative group overflow-hidden",
+        "block w-full h-full relative group overflow-hidden rounded-md",
         className
       )}
     >
@@ -39,6 +39,13 @@ const MangaCard = ({ manga, className }: MangaCardProps) => {
         >
           {manga.status.charAt(0).toUpperCase() + manga.status.slice(1)}
         </Badge>
+      </div>
+      
+      {/* Title overlay at bottom */}
+      <div className="absolute bottom-0 left-0 right-0 p-3">
+        <h3 className="text-white font-medium text-sm line-clamp-2">
+          {manga.title}
+        </h3>
       </div>
     </Link>
   );

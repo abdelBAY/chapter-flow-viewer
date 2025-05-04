@@ -15,14 +15,16 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { Search as SearchIcon } from "lucide-react";
+import { Search as SearchIcon, AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from "@/components/ui/card";
 
 const Search = () => {
   const location = useLocation();
   
   const [results, setResults] = useState<Manga[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   // Form state
   const [query, setQuery] = useState("");
@@ -59,6 +61,7 @@ const Search = () => {
   useEffect(() => {
     const performSearch = async () => {
       setLoading(true);
+      setError(null);
       try {
         const filters: SearchFilters = {
           query: query,
@@ -71,6 +74,7 @@ const Search = () => {
         setResults(searchResults);
       } catch (error) {
         console.error("Search failed:", error);
+        setError("Failed to fetch manga data. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -180,14 +184,28 @@ const Search = () => {
               ))}
             </div>
           </div>
+        ) : error ? (
+          <Card className="border-red-500/20 bg-red-950/10">
+            <CardContent className="flex items-center gap-3 p-4">
+              <AlertCircle className="text-red-500" size={20} />
+              <p>{error}</p>
+            </CardContent>
+          </Card>
+        ) : results.length === 0 ? (
+          <Card className="border-white/5 bg-secondary/10">
+            <CardContent className="p-8 text-center">
+              <h3 className="text-xl font-semibold mb-2">No manga found</h3>
+              <p className="text-muted-foreground">
+                Try adjusting your search criteria or browse our featured manga
+              </p>
+            </CardContent>
+          </Card>
         ) : (
           <>
             <h2 className="text-xl font-semibold mb-4">
-              {results.length === 0 
-                ? "No results found" 
-                : `Found ${results.length} manga${results.length === 1 ? "" : "s"}`}
+              Found {results.length} manga{results.length === 1 ? "" : "s"}
             </h2>
-            {results.length > 0 && <MangaGrid mangas={results} />}
+            <MangaGrid mangas={results} />
           </>
         )}
       </div>
