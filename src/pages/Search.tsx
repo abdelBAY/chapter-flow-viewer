@@ -15,7 +15,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { Search as SearchIcon, AlertCircle } from "lucide-react";
+import { Search as SearchIcon, AlertCircle, BookX } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -25,6 +25,7 @@ const Search = () => {
   const [results, setResults] = useState<Manga[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [searched, setSearched] = useState(false);
   
   // Form state
   const [query, setQuery] = useState("");
@@ -54,11 +55,14 @@ const Search = () => {
     const queryParam = params.get("q");
     if (queryParam) {
       setQuery(queryParam);
+      setSearched(true); // Mark as searched if there's a query param
     }
   }, [location.search]);
   
   // Perform search when form inputs change
   useEffect(() => {
+    if (!searched) return; // Only search if a search has been initiated
+    
     const performSearch = async () => {
       setLoading(true);
       setError(null);
@@ -80,12 +84,16 @@ const Search = () => {
       }
     };
     
-    performSearch();
-  }, [query, status, selectedGenres, sortBy]);
+    const debounceTimeout = setTimeout(() => {
+      performSearch();
+    }, 300);
+    
+    return () => clearTimeout(debounceTimeout);
+  }, [query, status, selectedGenres, sortBy, searched]);
   
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Search is already triggered by useEffect
+    setSearched(true); // Mark as searched when form is submitted
   };
   
   return (
@@ -191,13 +199,25 @@ const Search = () => {
               <p>{error}</p>
             </CardContent>
           </Card>
-        ) : results.length === 0 ? (
+        ) : !searched ? (
           <Card className="border-white/5 bg-secondary/10">
             <CardContent className="p-8 text-center">
-              <h3 className="text-xl font-semibold mb-2">No manga found</h3>
+              <h3 className="text-xl font-semibold mb-2">Enter your search criteria</h3>
               <p className="text-muted-foreground">
-                Try adjusting your search criteria or browse our featured manga
+                Use the search form above to find your favorite manga
               </p>
+            </CardContent>
+          </Card>
+        ) : results.length === 0 ? (
+          <Card className="border-white/5 bg-secondary/10">
+            <CardContent className="p-8 text-center flex flex-col items-center gap-4">
+              <BookX size={32} className="text-muted-foreground" />
+              <div>
+                <h3 className="text-xl font-semibold mb-2">No manga found</h3>
+                <p className="text-muted-foreground">
+                  Try adjusting your search criteria or browse our featured manga
+                </p>
+              </div>
             </CardContent>
           </Card>
         ) : (
