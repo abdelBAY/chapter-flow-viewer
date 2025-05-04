@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Manga } from "@/types/manga";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 interface MangaCardProps {
   manga: Manga;
@@ -10,10 +11,16 @@ interface MangaCardProps {
 }
 
 const MangaCard = ({ manga, className }: MangaCardProps) => {
+  const [imageError, setImageError] = useState(false);
+  
   const statusColors = {
     ongoing: "bg-green-500/20 text-green-300 border-green-500/30",
     completed: "bg-blue-500/20 text-blue-300 border-blue-500/30",
     hiatus: "bg-amber-500/20 text-amber-300 border-amber-500/30",
+  };
+
+  const handleImageError = () => {
+    setImageError(true);
   };
 
   return (
@@ -24,12 +31,20 @@ const MangaCard = ({ manga, className }: MangaCardProps) => {
         className
       )}
     >
-      <img
-        src={manga.cover}
-        alt={manga.title}
-        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
+      {!imageError ? (
+        <img
+          src={manga.cover}
+          alt={manga.title}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          onError={handleImageError}
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center bg-gray-800 text-white">
+          <span className="text-sm font-medium px-3 py-2 text-center">{manga.title}</span>
+        </div>
+      )}
+      
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-90 group-hover:opacity-100 transition-opacity" />
       
       {/* Status badge */}
       <div className="absolute top-2 right-2">
