@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Chapter } from "@/types/manga";
 import { formatDistanceToNow } from "date-fns";
@@ -15,14 +14,12 @@ interface ChapterListProps {
 export const ChapterList = ({ chapters, mangaId, className, limit }: ChapterListProps) => {
   const displayedChapters = limit ? chapters.slice(0, limit) : chapters;
   
-  // Find the latest chapter based on creation date
+  // Find the latest chapter based on chapter number
   const getLatestChapter = (): string | null => {
     if (chapters.length === 0) return null;
     
     return chapters.reduce((latest, current) => {
-      const latestDate = new Date(latest.createdAt).getTime();
-      const currentDate = new Date(current.createdAt).getTime();
-      return currentDate > latestDate ? current : latest;
+      return current.number > latest.number ? current : latest;
     }, chapters[0]).id;
   };
   
