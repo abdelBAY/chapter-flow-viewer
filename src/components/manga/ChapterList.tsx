@@ -2,7 +2,7 @@
 import { Link } from "react-router-dom";
 import { Chapter } from "@/types/manga";
 import { formatDistanceToNow } from "date-fns";
-import { Book, Clock, Calendar, Flame } from "lucide-react";
+import { Book, Calendar, Flame } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface ChapterListProps {
@@ -56,10 +56,10 @@ export const ChapterList = ({
       // Format as "X days" if less than 30 days
       if (timeDiff < 30 * 24 * 60 * 60 * 1000) {
         const days = Math.floor(timeDiff / (24 * 60 * 60 * 1000));
-        return days === 0 ? "Today" : `${days} day${days > 1 ? 's' : ''}`;
+        return days === 0 ? "Today" : `${days} day${days > 1 ? 's' : ''} ago`;
       }
       return formatDistanceToNow(date, {
-        addSuffix: false
+        addSuffix: true
       });
     } catch (error) {
       return "Unknown date";
@@ -68,7 +68,15 @@ export const ChapterList = ({
   
   return <div className={className}>
       <div className="space-y-1.5">
-        {chapters.length === 0 ? <p className="text-white/50 text-sm">No chapters available.</p> : displayedChapters.map(chapter => <Link key={chapter.id} to={`/manga/${mangaId}/chapter/${chapter.id}`} className={`flex items-center gap-2 text-sm ${chapter.id === latestChapterId ? "text-white font-medium bg-white/10" : "text-white/70"} hover:text-manga-accent transition-colors p-1 rounded hover:bg-white/5`}>
+        {chapters.length === 0 ? (
+          <p className="text-white/50 text-sm">No chapters available.</p>
+        ) : (
+          displayedChapters.map(chapter => (
+            <Link 
+              key={chapter.id} 
+              to={`/manga/${mangaId}/chapter/${chapter.id}`} 
+              className={`flex items-center gap-2 text-sm ${chapter.id === latestChapterId ? "text-white font-medium bg-white/10" : "text-white/70"} hover:text-manga-accent transition-colors p-1 rounded hover:bg-white/5`}
+            >
               <Book className={`h-3.5 w-3.5 ${chapter.id === latestChapterId ? "text-manga-accent" : "text-manga-accent"}`} />
               <span className="font-medium">Chapter {chapter.number}</span>
               
@@ -85,7 +93,9 @@ export const ChapterList = ({
                 <Calendar className="h-3 w-3" />
                 {safeFormatDate(chapter.createdAt)}
               </span>
-            </Link>)}
+            </Link>
+          ))
+        )}
       </div>
     </div>;
 };
