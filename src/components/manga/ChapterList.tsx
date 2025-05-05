@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { Chapter } from "@/types/manga";
 import { formatDistanceToNow } from "date-fns";
@@ -12,7 +13,11 @@ interface ChapterListProps {
 }
 
 export const ChapterList = ({ chapters, mangaId, className, limit }: ChapterListProps) => {
-  const displayedChapters = limit ? chapters.slice(0, limit) : chapters;
+  // Sort chapters by number in descending order (highest chapter number first)
+  const sortedChapters = [...chapters].sort((a, b) => b.number - a.number);
+  
+  // Apply limit after sorting if specified
+  const displayedChapters = limit ? sortedChapters.slice(0, limit) : sortedChapters;
   
   // Find the latest chapter based on chapter number
   const getLatestChapter = (): string | null => {
