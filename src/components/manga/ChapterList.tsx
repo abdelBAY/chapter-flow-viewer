@@ -2,7 +2,8 @@
 import { Link } from "react-router-dom";
 import { Chapter } from "@/types/manga";
 import { formatDistanceToNow } from "date-fns";
-import { Book, Clock } from "lucide-react";
+import { Book, Clock, Flame } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface ChapterListProps {
   chapters: Chapter[];
@@ -14,11 +15,33 @@ interface ChapterListProps {
 export const ChapterList = ({ chapters, mangaId, className, limit }: ChapterListProps) => {
   const displayedChapters = limit ? chapters.slice(0, limit) : chapters;
 
+  const isNewChapter = (dateStr: string): boolean => {
+    try {
+      const chapterDate = new Date(dateStr);
+      const now = new Date();
+      // Consider chapters less than 3 days old as "new"
+      const timeDiff = now.getTime() - chapterDate.getTime();
+      return timeDiff < 3 * 24 * 60 * 60 * 1000; // 3 days in milliseconds
+    } catch (error) {
+      return false;
+    }
+  };
+
   const safeFormatDate = (dateStr: string): string => {
     try {
       const date = new Date(dateStr);
       if (isNaN(date.getTime())) return "Unknown date";
-      return formatDistanceToNow(date, { addSuffix: true });
+      
+      const now = new Date();
+      const timeDiff = now.getTime() - date.getTime();
+      
+      // Format as "X days" if less than 30 days
+      if (timeDiff < 30 * 24 * 60 * 60 * 1000) {
+        const days = Math.floor(timeDiff / (24 * 60 * 60 * 1000));
+        return days === 0 ? "Today" : `${days} day${days > 1 ? 's' : ''}`;
+      }
+      
+      return formatDistanceToNow(date, { addSuffix: false });
     } catch (error) {
       return "Unknown date";
     }
@@ -38,8 +61,17 @@ export const ChapterList = ({ chapters, mangaId, className, limit }: ChapterList
             >
               <Book className="h-3.5 w-3.5 text-manga-accent" />
               <span className="font-medium">Chapter {chapter.number}</span>
-              <Clock className="h-3.5 w-3.5 ml-auto text-white/50" />
-              <span className="text-xs text-white/50">{safeFormatDate(chapter.createdAt)}</span>
+              
+              {isNewChapter(chapter.createdAt) && (
+                <Badge variant="destructive" className="ml-2 px-1.5 py-0 text-[10px] h-4 bg-[#ea384c]">
+                  <Flame className="h-3 w-3 mr-0.5" />
+                  New
+                </Badge>
+              )}
+              
+              <span className="ml-auto text-xs text-white/50">
+                {safeFormatDate(chapter.createdAt)}
+              </span>
             </Link>
           ))
         )}
