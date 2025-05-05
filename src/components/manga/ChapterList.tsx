@@ -14,6 +14,19 @@ interface ChapterListProps {
 
 export const ChapterList = ({ chapters, mangaId, className, limit }: ChapterListProps) => {
   const displayedChapters = limit ? chapters.slice(0, limit) : chapters;
+  
+  // Find the latest chapter based on creation date
+  const getLatestChapter = (): string | null => {
+    if (chapters.length === 0) return null;
+    
+    return chapters.reduce((latest, current) => {
+      const latestDate = new Date(latest.createdAt).getTime();
+      const currentDate = new Date(current.createdAt).getTime();
+      return currentDate > latestDate ? current : latest;
+    }, chapters[0]).id;
+  };
+  
+  const latestChapterId = getLatestChapter();
 
   const isNewChapter = (dateStr: string): boolean => {
     try {
@@ -57,15 +70,25 @@ export const ChapterList = ({ chapters, mangaId, className, limit }: ChapterList
             <Link 
               key={chapter.id}
               to={`/manga/${mangaId}/chapter/${chapter.id}`}
-              className="flex items-center gap-2 text-sm text-white/70 hover:text-manga-accent transition-colors p-1 rounded hover:bg-white/5"
+              className={`flex items-center gap-2 text-sm ${
+                chapter.id === latestChapterId
+                  ? "text-white font-medium bg-white/10"
+                  : "text-white/70"
+              } hover:text-manga-accent transition-colors p-1 rounded hover:bg-white/5`}
             >
-              <Book className="h-3.5 w-3.5 text-manga-accent" />
+              <Book className={`h-3.5 w-3.5 ${chapter.id === latestChapterId ? "text-manga-accent" : "text-manga-accent"}`} />
               <span className="font-medium">Chapter {chapter.number}</span>
               
               {isNewChapter(chapter.createdAt) && (
                 <Badge variant="destructive" className="ml-2 px-1.5 py-0 text-[10px] h-4 bg-[#ea384c]">
                   <Flame className="h-3 w-3 mr-0.5" />
                   New
+                </Badge>
+              )}
+              
+              {chapter.id === latestChapterId && !isNewChapter(chapter.createdAt) && (
+                <Badge className="ml-2 px-1.5 py-0 text-[10px] h-4 bg-manga-accent">
+                  Latest
                 </Badge>
               )}
               
