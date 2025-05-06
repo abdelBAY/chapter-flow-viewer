@@ -39,34 +39,44 @@ const HomePage = () => {
   useEffect(() => {
     const fetchMangas = async () => {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from("cms_mangas")
-        .select(`
-          *,
-          recent_chapters:cms_chapters(
-            id,
-            number,
-            title,
-            created_at,
-            pages
-          )
-        `)
-        .order("updated_at", { ascending: false })
-        .limit(6);
+      try {
+        // Fetch ALL manga with their recent chapters
+        const { data, error } = await supabase
+          .from("cms_mangas")
+          .select(`
+            *,
+            recent_chapters:cms_chapters(
+              id,
+              number,
+              title,
+              created_at,
+              pages
+            )
+          `)
+          .order("updated_at", { ascending: false });
 
-      if (error) {
+        if (error) {
+          console.error("Error fetching manga:", error);
+          setIsLoading(false);
+          return;
+        }
+        
+        const mangas: Manga[] = (data || []).map(mapSupabaseManga);
+        // Get the most recent 6 manga for the latest updates section
+        const recentMangas = mangas.slice(0, 6);
+        setLatestMangas(recentMangas);
+
+        // For popular series, use all manga but display them differently
+        // Later this could be replaced with actual popularity metrics
+        const shuffled = [...mangas].sort(() => Math.random() - 0.5);
+        setPopularMangas(shuffled.slice(0, 10));
+      } catch (err) {
+        console.error("Failed to fetch manga:", err);
+      } finally {
         setIsLoading(false);
-        return;
       }
-      
-      const mangas: Manga[] = (data || []).map(mapSupabaseManga);
-      setLatestMangas(mangas);
-
-      // "Popular Series": just shuffle for now
-      const shuffled = [...mangas].sort(() => Math.random() - 0.5);
-      setPopularMangas(shuffled);
-      setIsLoading(false);
     };
+    
     fetchMangas();
   }, []);
 
@@ -82,6 +92,7 @@ const HomePage = () => {
       );
     }
 
+    // Use the first 3 popular manga for the featured section
     const featuredMangas = popularMangas.slice(0, 3);
     
     return (
