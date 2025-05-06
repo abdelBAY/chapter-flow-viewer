@@ -42,9 +42,6 @@ const SearchResults = ({ results, loading, searched, error }: SearchResultsProps
   }
 
   if (!searched) {
-    // Instead of showing the search prompt, we'll show all manga
-    // We're using the same results prop that would be passed from the parent
-    // The parent component will need to be updated to load all manga when not searched
     return (
       <>
         <h2 className="text-xl font-semibold mb-4">All Manga</h2>
