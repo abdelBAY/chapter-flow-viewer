@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Manga, SearchFilters } from "@/types/manga";
-import { searchManga } from "@/services/mangaService";
+import { searchManga, getMangaList } from "@/services/mangaService";
 import SearchForm from "@/components/search/SearchForm";
 import FilterOptions, { FilterState } from "@/components/search/FilterOptions";
 import SearchResults from "@/components/search/SearchResults";
@@ -11,7 +11,7 @@ const Search = () => {
   const location = useLocation();
   
   const [results, setResults] = useState<Manga[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Start with loading to fetch all manga
   const [error, setError] = useState<string | null>(null);
   const [searched, setSearched] = useState(false);
   
@@ -22,6 +22,23 @@ const Search = () => {
     genres: [],
     sortBy: "latest"
   });
+  
+  // Load all manga on component mount
+  useEffect(() => {
+    const loadAllManga = async () => {
+      try {
+        const allManga = await getMangaList();
+        setResults(allManga);
+      } catch (error) {
+        console.error("Failed to load manga:", error);
+        setError("Failed to load manga. Please refresh the page.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadAllManga();
+  }, []);
   
   // Parse query params on initial load
   useEffect(() => {

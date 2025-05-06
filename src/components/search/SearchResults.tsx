@@ -42,16 +42,28 @@ const SearchResults = ({ results, loading, searched, error }: SearchResultsProps
   }
 
   if (!searched) {
+    // Instead of showing the search prompt, we'll show all manga
+    // We're using the same results prop that would be passed from the parent
+    // The parent component will need to be updated to load all manga when not searched
     return (
-      <Card className="border-white/5 bg-secondary/10">
-        <CardContent className="p-8 text-center">
-          <Search size={32} className="mx-auto mb-4 text-muted-foreground" />
-          <h3 className="text-xl font-semibold mb-2">Enter your search criteria</h3>
-          <p className="text-muted-foreground">
-            Use the search form above to find your favorite manga
-          </p>
-        </CardContent>
-      </Card>
+      <>
+        <h2 className="text-xl font-semibold mb-4">All Manga</h2>
+        {results.length > 0 ? (
+          <MangaGrid mangas={results} />
+        ) : (
+          <Card className="border-white/5 bg-secondary/10">
+            <CardContent className="p-8 text-center flex flex-col items-center gap-4">
+              <Search size={32} className="text-muted-foreground" />
+              <div>
+                <h3 className="text-xl font-semibold mb-2">Browse our collection</h3>
+                <p className="text-muted-foreground">
+                  Use the search form above to find specific manga
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </>
     );
   }
 
