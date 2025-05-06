@@ -7,9 +7,12 @@ import { Manga, Chapter } from "@/types/manga";
 interface ReaderHeaderProps {
   manga: Manga;
   chapter: Chapter;
+  visible?: boolean;
 }
 
-export const ReaderHeader = ({ manga, chapter }: ReaderHeaderProps) => {
+export const ReaderHeader = ({ manga, chapter, visible = true }: ReaderHeaderProps) => {
+  if (!visible) return null;
+  
   return (
     <div className="fixed top-16 inset-x-0 z-30 bg-black/70 backdrop-blur-sm border-b border-white/10">
       <div className="container mx-auto py-2 px-4 flex justify-between items-center">

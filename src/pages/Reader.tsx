@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,10 +17,13 @@ import { ReaderHeader } from "@/components/manga/reader/ReaderHeader";
 import { ChapterSidebar } from "@/components/manga/reader/ChapterSidebar";
 import { PageDisplay } from "@/components/manga/reader/PageDisplay";
 import { ChapterNavigation } from "@/components/manga/reader/ChapterNavigation";
+import { ChevronUp } from "lucide-react";
 
 const Reader = () => {
   const { id: mangaId, chapterId } = useParams<{ id: string; chapterId: string }>();
   const navigate = useNavigate();
+  const [readingMode, setReadingMode] = useState(false);
+  const topRef = useRef<HTMLDivElement>(null);
   
   // Fetch manga data
   const { data: manga, isLoading: loadingManga } = useQuery({
@@ -135,6 +137,13 @@ const Reader = () => {
     return currentChapterIndex < chapters.length - 1 ? chapters[currentChapterIndex + 1] : null;
   };
   
+  const scrollToTop = () => {
+    topRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+  
+  const toggleReadingMode = () => {
+    setReadingMode(!readingMode);
+  };
   
   if (loading) {
     return (
@@ -166,8 +175,16 @@ const Reader = () => {
   const prevChapterData = getPrevChapter();
   
   return (
-    <div className="flex flex-col items-center min-h-screen">
-      <ReaderHeader manga={manga} chapter={chapter} />
+    <div 
+      className="flex flex-col items-center min-h-screen"
+      onClick={toggleReadingMode}
+    >
+      <div ref={topRef} />
+      <ReaderHeader 
+        manga={manga} 
+        chapter={chapter} 
+        visible={!readingMode}
+      />
       
       <div className="w-full max-w-3xl mt-20 mb-8 px-4">
         <PageDisplay pages={pages} />
@@ -179,16 +196,32 @@ const Reader = () => {
         prevChapter={prevChapterData}
         onNextChapter={nextChapter}
         onPrevChapter={prevChapter}
+        visible={!readingMode}
       />
       
-      <div className="fixed top-16 right-4 z-30">
-        <ChapterSidebar
-          manga={manga}
-          chapters={chapters}
-          currentChapter={chapter}
-          onChapterSelect={navigateToChapter}
-        />
-      </div>
+      {!readingMode && (
+        <div className="fixed top-16 right-4 z-30">
+          <ChapterSidebar
+            manga={manga}
+            chapters={chapters}
+            currentChapter={chapter}
+            onChapterSelect={navigateToChapter}
+          />
+        </div>
+      )}
+      
+      {/* Back to top button */}
+      <Button
+        variant="secondary"
+        size="icon"
+        className={`fixed bottom-4 left-4 rounded-full shadow-lg opacity-70 hover:opacity-100 transition-opacity ${readingMode ? 'opacity-30' : 'opacity-70'}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          scrollToTop();
+        }}
+      >
+        <ChevronUp className="h-5 w-5" />
+      </Button>
     </div>
   );
 };

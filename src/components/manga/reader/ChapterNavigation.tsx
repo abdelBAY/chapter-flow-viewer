@@ -9,6 +9,7 @@ interface ChapterNavigationProps {
   prevChapter: Chapter | null;
   onNextChapter: () => void;
   onPrevChapter: () => void;
+  visible?: boolean;
 }
 
 export const ChapterNavigation = ({
@@ -16,8 +17,11 @@ export const ChapterNavigation = ({
   nextChapter,
   prevChapter,
   onNextChapter,
-  onPrevChapter
+  onPrevChapter,
+  visible = true
 }: ChapterNavigationProps) => {
+  if (!visible) return null;
+  
   return (
     <div className="fixed bottom-4 inset-x-0 z-30">
       <div className="container mx-auto px-4">
