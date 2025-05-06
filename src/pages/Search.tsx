@@ -30,59 +30,64 @@ const Search = () => {
     if (queryParam) {
       setQuery(queryParam);
       setSearched(true); // Mark as searched if there's a query param
+      // Trigger search immediately if query param exists
+      performSearch(queryParam, filters);
     }
   }, [location.search]);
   
-  // Perform search when form inputs change
+  // Perform search function
+  const performSearch = async (searchQuery: string, searchFilters: FilterState) => {
+    setLoading(true);
+    setError(null);
+    try {
+      console.log("Performing search with query:", searchQuery);
+      
+      const filters: SearchFilters = {
+        query: searchQuery,
+        status: searchFilters.status === "all" ? undefined : searchFilters.status,
+        genres: searchFilters.genres.length > 0 ? searchFilters.genres : undefined,
+        sortBy: searchFilters.sortBy
+      };
+      
+      console.log("Search filters:", filters);
+      const searchResults = await searchManga(filters);
+      console.log("Search results:", searchResults);
+      setResults(searchResults);
+    } catch (error) {
+      console.error("Search failed:", error);
+      setError("Failed to fetch manga data. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Perform search when filters change (only if already searched)
   useEffect(() => {
-    if (!searched) return; // Only search if a search has been initiated
-    
-    const performSearch = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const searchFilters: SearchFilters = {
-          query: query,
-          status: filters.status,
-          genres: filters.genres.length > 0 ? filters.genres : undefined,
-          sortBy: filters.sortBy
-        };
-        
-        // Make sure genres is properly handled
-        if (searchFilters.genres && 
-            (typeof searchFilters.genres === 'object' && 
-             '_type' in searchFilters.genres)) {
-          delete searchFilters.genres;
-        }
-        
-        const searchResults = await searchManga(searchFilters);
-        setResults(searchResults);
-      } catch (error) {
-        console.error("Search failed:", error);
-        setError("Failed to fetch manga data. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (searched) {
+      performSearch(query, filters);
+    }
+  }, [filters.status, filters.sortBy, searched]);
+  
+  // Debounced search for genres changes
+  useEffect(() => {
+    if (!searched) return;
     
     const debounceTimeout = setTimeout(() => {
-      performSearch();
+      performSearch(query, filters);
     }, 300);
     
     return () => clearTimeout(debounceTimeout);
-  }, [query, filters.status, filters.genres, filters.sortBy, searched]);
+  }, [filters.genres]);
   
   const handleSearch = (newQuery: string) => {
     setQuery(newQuery);
-    setSearched(true); // Mark as searched when form is submitted
+    setSearched(true); 
+    performSearch(newQuery, filters);
   };
   
   const handleFilterChange = (newFilters: FilterState) => {
     setFilters(newFilters);
-    if (searched) {
-      // Only trigger search if user has already performed an initial search
-      // This prevents filtering from triggering a search before user is ready
-    }
+    // Search will be triggered by the effect watching filters
   };
   
   return (

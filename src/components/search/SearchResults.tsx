@@ -45,6 +45,7 @@ const SearchResults = ({ results, loading, searched, error }: SearchResultsProps
     return (
       <Card className="border-white/5 bg-secondary/10">
         <CardContent className="p-8 text-center">
+          <Search size={32} className="mx-auto mb-4 text-muted-foreground" />
           <h3 className="text-xl font-semibold mb-2">Enter your search criteria</h3>
           <p className="text-muted-foreground">
             Use the search form above to find your favorite manga
