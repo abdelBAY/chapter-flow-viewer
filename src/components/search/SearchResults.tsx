@@ -2,7 +2,7 @@
 import { Manga } from "@/types/manga";
 import MangaGrid from "@/components/manga/MangaGrid";
 import { Card, CardContent } from "@/components/ui/card";
-import { AlertCircle, BookX } from "lucide-react";
+import { AlertCircle, BookX, Search } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface SearchResultsProps {

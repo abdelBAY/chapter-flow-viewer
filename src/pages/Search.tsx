@@ -48,6 +48,13 @@ const Search = () => {
           sortBy: filters.sortBy
         };
         
+        // Make sure genres is properly handled
+        if (searchFilters.genres && 
+            (typeof searchFilters.genres === 'object' && 
+             '_type' in searchFilters.genres)) {
+          delete searchFilters.genres;
+        }
+        
         const searchResults = await searchManga(searchFilters);
         setResults(searchResults);
       } catch (error) {
