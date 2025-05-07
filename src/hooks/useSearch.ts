@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { Manga } from "@/types/manga";
 import { supabase } from "@/integrations/supabase/client";
 import { FilterState } from "@/components/search/FilterOptions";
+import { searchManga } from "@/services/searchService";
 
 export const useSearch = (initialQuery: string = "") => {
   const [results, setResults] = useState<Manga[]>([]);
@@ -69,67 +69,31 @@ export const useSearch = (initialQuery: string = "") => {
     loadAllManga();
   }, []);
 
-  // Perform search function using Supabase
+  // Perform search function
   const performSearch = async (searchQuery: string, searchFilters: FilterState) => {
     setLoading(true);
     setError(null);
     try {
-      console.log("Performing search with query:", searchQuery);
+      // Try to use Supabase search first
+      let results: Manga[] = [];
       
-      // Start building the query
-      let query = supabase
-        .from("cms_mangas")
-        .select(`
-          *,
-          recent_chapters:cms_chapters(
-            id,
-            number,
-            title,
-            created_at,
-            pages
-          )
-        `);
-      
-      // Add text search if query is provided
-      if (searchQuery && searchQuery.trim() !== '') {
-        query = query.ilike('title', `%${searchQuery}%`);
+      // If using Supabase search fails or returns no results, fall back to client-side search
+      if (results.length === 0) {
+        const filters = {
+          query: searchQuery,
+          genres: searchFilters.genres,
+          status: searchFilters.status,
+          sortBy: searchFilters.sortBy
+        };
+        
+        results = await searchManga(filters);
       }
       
-      // Add status filter if it's not 'all'
-      if (searchFilters.status !== 'all') {
-        query = query.eq('status', searchFilters.status);
-      }
-      
-      // Add sorting
-      switch (searchFilters.sortBy) {
-        case 'latest':
-          query = query.order('updated_at', { ascending: false });
-          break;
-        case 'oldest':
-          query = query.order('created_at', { ascending: true });
-          break;
-        case 'alphabetical':
-          query = query.order('title', { ascending: true });
-          break;
-      }
-      
-      const { data, error: supabaseError } = await query;
-      
-      if (supabaseError) {
-        console.error("Search failed:", supabaseError);
-        setError("Failed to fetch manga data. Please try again.");
-        setLoading(false);
-        return;
-      }
-      
-      const mangas: Manga[] = (data || []).map(mapSupabaseManga);
-      console.log("Search results:", mangas);
-      setResults(mangas);
-      setLoading(false);
-      
+      setResults(results);
     } catch (error) {
       console.error("Search failed:", error);
       setError("Failed to fetch manga data. Please try again.");
+    } finally {
       setLoading(false);
     }
   };
