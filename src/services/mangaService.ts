@@ -88,31 +88,3 @@ export const searchManga = (filters: SearchFilters): Promise<Manga[]> => {
   console.log("Final search results:", results.length);
   return Promise.resolve(results);
 };
-
-// Favorites management (client-side only for now)
-export const getFavorites = (): Promise<Manga[]> => {
-  const favoritesIds = JSON.parse(localStorage.getItem('favorites') || '[]');
-  const favorites = mockMangas.filter(manga => favoritesIds.includes(manga.id));
-  return Promise.resolve(favorites);
-};
-
-export const addFavorite = (mangaId: string): Promise<void> => {
-  const favoritesIds = JSON.parse(localStorage.getItem('favorites') || '[]');
-  if (!favoritesIds.includes(mangaId)) {
-    favoritesIds.push(mangaId);
-    localStorage.setItem('favorites', JSON.stringify(favoritesIds));
-  }
-  return Promise.resolve();
-};
-
-export const removeFavorite = (mangaId: string): Promise<void> => {
-  const favoritesIds = JSON.parse(localStorage.getItem('favorites') || '[]');
-  const updatedFavorites = favoritesIds.filter((id: string) => id !== mangaId);
-  localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
-  return Promise.resolve();
-};
-
-export const isFavorite = (mangaId: string): Promise<boolean> => {
-  const favoritesIds = JSON.parse(localStorage.getItem('favorites') || '[]');
-  return Promise.resolve(favoritesIds.includes(mangaId));
-};

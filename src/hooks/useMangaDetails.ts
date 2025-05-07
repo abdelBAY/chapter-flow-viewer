@@ -2,7 +2,8 @@
 import { useState, useEffect } from "react";
 import { Manga, Chapter } from "@/types/manga";
 import { supabase } from "@/integrations/supabase/client";
-import { getMangaById, getChaptersByMangaId, isFavorite, addFavorite, removeFavorite } from "@/services/mangaService";
+import { getMangaById, getChaptersByMangaId } from "@/services/mangaService";
+import { isFavorite, addFavorite, removeFavorite } from "@/services/favoritesService";
 import { toast } from "sonner";
 
 export const useMangaDetails = (id: string) => {

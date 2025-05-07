@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { getFavorites } from "@/services/mangaService";
+import { getFavorites } from "@/services/favoritesService";
 import { Manga } from "@/types/manga";
 import MangaGrid from "@/components/manga/MangaGrid";
 import { Skeleton } from "@/components/ui/skeleton";
